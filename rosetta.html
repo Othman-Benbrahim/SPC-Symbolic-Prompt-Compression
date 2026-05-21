@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pierre de Rosette SPC</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg2: #16181c;
+  --bg3: #1e2128;
+  --border: #2a2d35;
+  --border2: #363a45;
+  --text: #e8e6df;
+  --muted: #6b7280;
+  --accent: #c8f05a;
+  --accent2: #5af0c8;
+  --accent3: #f0a05a;
+  --danger: #f05a5a;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
+
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+  background: var(--bg2); position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: var(--display); font-size: 15px; font-weight: 800; letter-spacing: .04em; color: var(--accent); }
+.logo span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
+.header-actions { display: flex; gap: 8px; }
+
+.layout { display: grid; grid-template-columns: 180px 1fr; min-height: calc(100vh - 49px); }
+
+nav { border-right: 1px solid var(--border); padding: 16px 0; background: var(--bg2); }
+.nav-section { font-size: 10px; color: var(--muted); padding: 4px 16px 8px; letter-spacing: .12em; text-transform: uppercase; }
+.nav-item {
+  display: block; padding: 8px 16px; cursor: pointer; color: var(--muted);
+  transition: color .15s, background .15s; border-left: 2px solid transparent;
+  font-size: 12px;
+}
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg3); }
+.nav-count { float: right; font-size: 10px; background: var(--bg3); padding: 1px 6px; border-radius: 10px; color: var(--muted); }
+.nav-item.active .nav-count { background: rgba(200,240,90,.15); color: var(--accent); }
+
+main { padding: 24px; overflow-y: auto; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-title { font-family: var(--display); font-size: 18px; font-weight: 800; color: var(--text); }
+.section-title small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-left: 10px; }
+
+btn, .btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: #0e0f11; }
+.btn-primary:hover { background: #d4f56a; }
+.btn-ghost { border: 1px solid var(--border2); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-danger { border: 1px solid var(--border2); color: var(--muted); }
+.btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-export { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-export:hover { background: rgba(200,240,90,.1); }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+.card-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.card-header:hover { background: var(--bg3); }
+.card-id { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--accent2); }
+.card-default { font-family: var(--mono); font-size: 11px; color: var(--accent); background: rgba(90,240,200,.08); padding: 3px 8px; border-radius: 4px; }
+.card-body { padding: 14px 16px; display: none; }
+.card-body.open { display: block; }
+
+.field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; margin-top: 14px; }
+.field-label:first-child { margin-top: 0; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tag {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
+  padding: 3px 8px; font-size: 11px; color: var(--text); display: flex; align-items: center; gap: 5px;
+}
+.tag-del { color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
+.tag-del:hover { color: var(--danger); }
+.tag-add { background: transparent; border: 1px dashed var(--border2); color: var(--muted); cursor: pointer; }
+.tag-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.param-group { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+.param-name { font-size: 11px; font-weight: 600; color: var(--accent3); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.param-value { margin-bottom: 6px; }
+.param-value-name { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+.shortcut-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 10px; align-items: center; }
+.shortcut-phrase { font-size: 12px; color: var(--text); }
+.shortcut-arrow { color: var(--muted); font-size: 16px; }
+.shortcut-dsl { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.shortcut-actions { display: flex; gap: 6px; }
+
+.add-form { background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; margin-top: 12px; display: none; }
+.add-form.open { display: block; }
+.add-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+input, textarea, select {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
+  padding: 7px 10px; color: var(--text); font-family: var(--mono); font-size: 12px;
+  outline: none; transition: border-color .15s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 60px; }
+
+.tester-area { max-width: 600px; }
+.tester-input { display: flex; gap: 8px; margin-bottom: 16px; }
+.tester-input input { flex: 1; font-size: 13px; padding: 10px 14px; }
+.result-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.result-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.result-prose { color: var(--muted); font-size: 13px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.result-dsl { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+.result-meta { display: flex; gap: 16px; }
+.result-metric { text-align: center; }
+.result-metric-val { font-size: 18px; font-weight: 600; color: var(--accent2); }
+.result-metric-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.no-match { color: var(--muted); font-style: italic; }
+
+.mod-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.mod-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.mod-name { font-size: 12px; font-weight: 600; color: var(--accent3); margin-bottom: 10px; }
+
+.status-bar { position: fixed; bottom: 16px; right: 24px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 14px; font-size: 12px; color: var(--accent); transform: translateY(60px); transition: transform .25s; z-index: 200; }
+.status-bar.show { transform: translateY(0); }
+
+.chevron { transition: transform .2s; display: inline-block; color: var(--muted); font-size: 10px; }
+.chevron.open { transform: rotate(90deg); }
+
+.inline-edit { background: var(--bg3); border: 1px solid var(--accent); border-radius: 4px; padding: 3px 8px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none; min-width: 120px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Pierre de Rosette <span>SPC v0.1</span></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="importJSON()">↑ Importer</button>
+    <button class="btn btn-export btn-sm" onclick="exportJSON()">↓ Exporter JSON</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Base de règles</div>
+    <div class="nav-item active" onclick="showSection('shortcuts')" id="nav-shortcuts">
+      Raccourcis <span class="nav-count" id="cnt-shortcuts">0</span>
+    </div>
+    <div class="nav-item" onclick="showSection('operators')" id="nav-operators">
+      Opérateurs <span class="nav-count" id="cnt-operators">0</span>
+    </div>
+    <div class="nav-item" onclick="showSection('modifiers')" id="nav-modifiers">
+      Modificateurs <span class="nav-count" id="cnt-modifiers">0</span>
+    </div>
+    <div class="nav-item" onclick="showSection('outputs')" id="nav-outputs">
+      Types sortie <span class="nav-count" id="cnt-outputs">0</span>
+    </div>
+    <div class="nav-section" style="margin-top:12px">Outil</div>
+    <div class="nav-item" onclick="showSection('lmstudio')" id="nav-lmstudio" style="color:var(--accent)">IA locale <span class="nav-count" style="background:rgba(200,240,90,.15);color:var(--accent)">3 IA</span></div>
+    <div class="nav-item" onclick="showSection('tester')" id="nav-tester">Tester</div>
+  </nav>
+
+  <main>
+
+    <div class="section active" id="section-shortcuts">
+      <div class="section-header">
+        <div class="section-title">Raccourcis <small>phrase exacte → DSL direct</small></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" placeholder="Rechercher…" oninput="filterShortcuts(this.value)"
+            style="font-size:12px;padding:5px 10px;width:180px;border-radius:var(--border-radius-md, 6px);border:1px solid var(--border2);background:var(--bg3);color:var(--text)">
+          <button class="btn btn-primary btn-sm" onclick="toggleAddShortcut()">+ Ajouter</button>
+        </div>
+      </div>
+      <div id="add-shortcut-form" class="add-form">
+        <div class="add-form-row">
+          <div class="form-group">
+            <label class="form-label">Phrase (en prose)</label>
+            <input id="sc-phrase" type="text" placeholder="analyse ce texte en profondeur">
+          </div>
+          <div class="form-group">
+            <label class="form-label">DSL généré</label>
+            <input id="sc-dsl" type="text" placeholder="ANALYZE[◈, ▲]">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="addShortcut()">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAddShortcut()">Annuler</button>
+        </div>
+      </div>
+      <div id="shortcuts-list"></div>
+    </div>
+
+    <div class="section" id="section-operators">
+      <div class="section-header">
+        <div class="section-title">Opérateurs <small>déclencheurs + paramètres</small></div>
+      </div>
+      <div id="operators-list"></div>
+    </div>
+
+    <div class="section" id="section-modifiers">
+      <div class="section-header">
+        <div class="section-title">Modificateurs <small>mots qui affectent le DSL</small></div>
+        <button class="btn btn-primary btn-sm" onclick="toggleAddModifier()">+ Ajouter</button>
+      </div>
+      <div id="add-modifier-form" class="add-form">
+        <div class="add-form-row">
+          <div class="form-group">
+            <label class="form-label">Nom du modificateur</label>
+            <input id="mod-name" type="text" placeholder="lazy_load">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Déclencheurs (séparés par ,)</label>
+            <input id="mod-triggers" type="text" placeholder="si besoin, à la demande, en attente">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="addModifier()">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAddModifier()">Annuler</button>
+        </div>
+      </div>
+      <div class="mod-section" id="modifiers-list"></div>
+    </div>
+
+    <div class="section" id="section-outputs">
+      <div class="section-header">
+        <div class="section-title">Types de sortie <small>mots → format après →</small></div>
+      </div>
+      <div class="mod-section" id="outputs-list"></div>
+    </div>
+
+    <div class="section" id="section-tester">
+      <div class="section-header">
+        <div class="section-title">Tester <small>prose → DSL sans IA</small></div>
+      </div>
+      <div class="tester-area">
+        <div class="tester-input">
+          <input id="test-input" type="text" placeholder="analyse ce code en profondeur sur le plan technique" onkeydown="if(event.key==='Enter')runTest()">
+          <button class="btn btn-primary" onclick="runTest()">Transpiler</button>
+        </div>
+        <div id="test-result"></div>
+      </div>
+    </div>
+
+
+    <div class="section" id="section-lmstudio">
+      <div class="section-header">
+        <div class="section-title">IA locale <small>Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder via LM Studio</small></div>
+        <div id="lm-status" style="font-size:12px;color:var(--muted)">Non connecté</div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;padding:14px 16px">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-bottom:14px">
+          <div class="form-group">
+            <label class="form-label">URL LM Studio</label>
+            <input id="lm-url" type="text" value="http://localhost:1234" style="font-size:12px">
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="testConnection()" style="height:36px">Tester connexion</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end">
+          <div class="form-group">
+            <label class="form-label">IA locale</label>
+            <select id="lm-model-select" onchange="syncModelFromSelect()" style="font-size:12px;color:var(--accent);font-family:var(--mono)">
+              <option value="google/gemma-3-4b">Gemma 3 4B</option>
+              <option value="mistral-nemo-instruct-2407">Mistral Nemo Instruct 2407</option>
+              <option value="Qwen2.5-Coder-7B-Instruct-Q4_K_M">Qwen2.5-Coder 7B Instruct Q4_K_M</option>
+              <option value="custom">Modèle personnalisé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Identifiant modèle LM Studio</label>
+            <input id="lm-model" type="text" value="google/gemma-3-4b" onchange="syncCustomModel()" style="font-size:12px;color:var(--accent);font-family:var(--mono)">
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--muted)">
+        <strong style="color:var(--accent2)">Architecture :</strong> Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder traduit la prose en DSL (zéro token cloud).
+        Le DSL compressé est ensuite envoyé à Claude ou tout autre LLM en ligne.<br>
+        <strong style="color:var(--accent2)">Compatibilité :</strong> mode JSON strict par prompt, sans paramètre <code>response_format</code>, pour éviter l'erreur HTTP 400 sur certaines versions de LM Studio.<br>
+        <strong style="color:var(--accent2)">Prérequis :</strong> LM Studio démarré · Serveur local activé · Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder chargé
+      </div>
+
+      <div class="tester-area" style="max-width:100%">
+        <div class="tester-input">
+          <input id="lm-input" type="text"
+            placeholder="Décris en langage naturel ce que tu veux faire…"
+            onkeydown="if(event.key==='Enter')runAI()"
+            style="font-size:13px;padding:10px 14px">
+          <button class="btn btn-primary" onclick="runAI()">Traduire via IA locale</button>
+        </div>
+        <div id="lm-result"></div>
+        <div style="margin-top:16px">
+          <p class="form-label">Exemples rapides</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="lm-examples">
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">analyze the codebase for security issues</button>
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">refactor this into functional components</button>
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">write unit tests and validate coverage</button>
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">fix the authentication bug then deploy to staging</button>
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">copie ce composant et adapte-le pour mobile</button>
+            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">active la résonance symbolique sur tout le texte</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="status-bar" id="status-bar">Sauvegardé</div>
+
+<input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+const DEFAULT = {"version":"0.1","description":"Pierre de Rosette SPC — règles de transpilation prose→DSL, sans IA","operators":[{"id":"SCAN","triggers":["scan","regarde","lis","vérifie","parcours","survole","jette un oeil","check","contrôle","review","look at","verify","inspect","look over","browse","look","survey","observe","read through","assess","audit","lint"],"default":"SCAN[◈]","params":{"focus":{"surface":["rapidement","vite","en surface","globalement","overview","quick"],"structure":["structure","organisation","architecture","layout","pattern","design"],"anomalies":["bug","bugs","erreur","problème","anomalie","ce qui ne va pas","error","issue","problem","never","avoid","fix"],"security":["security","auth","authentication","token","password","secret","sensitive","sécurité"],"tests":["test","spec","coverage","unit","integration","testing"]}}},{"id":"ANALYZE","triggers":["analyse","analyser","décompose","examine","étudie","creuse","explore","inspecte","analyze","study","investigate","deep dive","breakdown","understand","evaluate","assess","diagnose","profile"],"default":"ANALYZE[◈]","params":{"ctx":{"technique":["code","technique","fonctionnel","logique","algorithme","clean architecture","dependency injection","codebase","typescript","implementation","technical","react","nextjs","api","database","docker","performance","bundle","state management"],"symbolique":["symbolique","symbole","sens profond","signification","archétype","sens","meaning","symbolic","narrative"],"narratif":["narratif","récit","histoire","narration","storytelling","narrative","story","user story"],"rationnel":["rationnel","logique","factuel","objectif","logic","rational","factual","objective"]},"depth":{"1":["rapidement","vite","en surface","brièvement"],"2":["normalement","standard"],"3":["en profondeur","approfondi","détaillé","en détail","profondément","▲","analyze the existing codebase","comprehensive analysis","in-depth","thoroughly","deeply"]}}},{"id":"COMPARE","triggers":["compare","comparer","contraste","différence entre","vs","versus","contrast","distinguish","differentiate","benchmark"],"default":"COMPARE[a=◈, b=§1]","params":{}},{"id":"RESONE","triggers":["résonance","résonne","couches","symbolique","sens","activates","résonner","résoner"],"default":"RESONE[◈]","params":{"layers":{"sémantique":["sémantique","signification","sens littéral"],"émotionnel":["émotionnel","ressenti","émotion","feeling"],"symbolique":["symbolique","archétype","symbole"],"narratif":["narratif","récit"],"all":["toutes les couches","tout","complet","entier","all"]}}},{"id":"TRANSDUIT","triggers":["transforme","convertis","traduis","change de registre","passe en","transpose","refactore","refactor","convert","transform","migrate","translate","rewrite","adapt","port","restructure","reorganize","modernize","update to"],"default":"TRANSDUIT[◈]","params":{"from":{"technique":["depuis technique","depuis le code"],"symbolique":["depuis symbolique"],"prose":["depuis prose","depuis le texte"],"rationnel":["depuis rationnel"]},"to":{"STÈLE":["en stèle","en glyphes","en chaîne stèle"],"symbolique":["en symbolique","vers symbolique"],"prose":["en prose","en texte","en français"],"SPC":["en spc","en dsl","en compact"]}}},{"id":"COMPRESS","triggers":["compresse","résume","réduis","archive","synthétise","condense","minimise","garde minimal","keep minimal","minimize","keep small","reduce","compress","simplify","make minimal","keep diff small","trim","shorten","abbreviate"],"default":"COMPRESS[◈]","params":{"format":{"STÈLE":["en stèle","en glyphes"],"SPC":["en spc","en dsl"]},"ratio":{"max":["au maximum","le plus court possible","minimal","▲"],"balanced":["équilibré","normal"],"light":["léger","peu"]}}},{"id":"APPLY","triggers":["applique","utilise","lance","active","charge","use","emploie","implement","apply","follow","enforce","adopt","employ","utilize","leverage","stick to","rely on"],"default":"APPLY[@skill, ◈]","params":{"skill":{"@stele":["stèle","stele","l'alphabet"],"@fractales":["fractales","oracle","tirage"],"@metalangage":["métalangage","metalangage","résonances"],"@ler":["ler","écriture-réalité"]}}},{"id":"EXPAND","triggers":["déploie","développe","étends","explicite","détaille depuis","documente","commente","détaille","document","explain","provide","describe","add comments","include","expand","detail","generate docs","elaborate","comment","annotate"],"default":"EXPAND[seed=◈]","params":{}},{"id":"FILTER","triggers":["filtre","garde seulement","ne garde que","supprime","enlève","exclut","évite","avoid","never","exclude","remove","filter","strip","ignore","omit","don't use","discard","skip","reject","prevent","forbid","block","dont use","do not use"],"default":"FILTER[◈]","params":{}},{"id":"ITERATE","triggers":["répète","refais","itère","pour chaque","sur tous","one by one","for each","iterate","loop","for all","step by step","repeat","go through","process each","test all"],"default":"ITERATE[op=ANALYZE, n=3]","params":{}},{"id":"CLONE","triggers":["copie","colle","copier-coller","copier","dupliquer","répliquer","reproduire","clone","copy","paste","duplicate","replicate","mirror","scaffold from","base on","modeled on","same as","like this but","similar to","inspired from","scaffold","model on"],"default":"CLONE[source=◈, target=§1]","params":{"adapt":{"oui":["adapte","modifie","en adaptant","with changes","adjusted","modified","but with"],"non":["identique","exact","verbatim","sans changement","as is","exact copy"]},"scope":{"composant":["composant","component","widget","module"],"fonction":["fonction","function","method","méthode"],"structure":["structure","pattern","template","architecture","scaffold"]}}},{"id":"VALIDATE","triggers":["validate","verify","ensure","check that","confirm","assert","test","make sure","valide","vérifie","assure-toi","confirme","teste","assure"],"default":"VALIDATE[◈]","params":{"scope":{"types":["type","typescript","typing","types","typed"],"tests":["test","tests","unit","integration","coverage","spec"],"security":["security","auth","permission","access","role","token"],"schema":["schema","format","structure","shape","contract"]}}},{"id":"DEPLOY","triggers":["deploy","build","ship","release","publish","push","bundle","compile","déploie","publie","compile","lance","ship"],"default":"DEPLOY[◈]","params":{"env":{"prod":["production","prod","live"],"staging":["staging","preprod","test env"],"dev":["dev","local","development"]}}},{"id":"DEBUG","triggers":["debug","fix","resolve","troubleshoot","investigate error","trace","diagnose","répare","corrige","résous","débogue","investigate"],"default":"DEBUG[◈]","params":{"focus":{"error":["error","exception","crash","bug","issue","problem"],"performance":["slow","performance","latency","timeout","memory"],"logic":["logic","wrong output","incorrect","unexpected"]}}},{"id":"CREATE","triggers":["create","generate","scaffold","build","make","new","init","bootstrap","setup","create a","generate a","build a","make a","new component","new file","new module","from scratch","boilerplate","starter","template for","set up"],"default":"CREATE[◈]","params":{"type":{"component":["component","widget","element","ui","button","form","modal","page"],"function":["function","method","helper","util","hook","handler","callback"],"api":["api","endpoint","route","controller","service","rest","graphql"],"schema":["schema","model","type","interface","struct","entity","dto"],"test":["test file","spec","test suite","mock","fixture"],"config":["config","configuration","settings","env","dotenv","setup file"]},"from":{"scratch":["from scratch","from zero","brand new","empty","blank","new"],"template":["template","boilerplate","starter","pattern","convention"]}}},{"id":"ADD","triggers":["add","inject","insert","include","append","extend","augment","plug in","attach","add to","add a","add the","insert into","include in","extend with","introduce","wire up","hook up","connect","integrate"],"default":"ADD[target=◈]","params":{"what":{"feature":["feature","functionality","capability","behavior","support for"],"error-handling":["error handling","try catch","exception","fallback","guard"],"logging":["logging","log","console","trace","monitoring"],"validation":["validation","validator","check","guard","sanitize"],"pagination":["pagination","paging","infinite scroll","load more"],"auth":["auth","authentication","authorization","jwt","session","middleware"],"field":["field","property","attribute","column","key","param"]},"scope":{"*":["all","every","each","across","throughout","globally"],"◈":["this","here","current","this one"]}}},{"id":"FIND","triggers":["find","search","locate","look for","where is","where are","grep","trace","search for","find all","find where","look for","scan for","detect all","usages of","references to","calls to","instances of","occurrences of"],"default":"FIND[input=*, pattern=◈]","params":{"scope":{"*":["all","everywhere","entire","whole","codebase","project","across"],"file":["in this file","current file","here"],"function":["in this function","in this method"]},"type":{"usage":["usage","usages","used","uses","called","calls to","references"],"pattern":["pattern","occurrences","instances","matches","similar"],"import":["import","imported","dependency","depends on"],"definition":["defined","definition","declaration","where is defined"]}}}],"modifiers":{"▲_max":["en profondeur","au maximum","approfondi","▲","tout","thoroughly","deeply","comprehensive","in-depth","at all times","fully"],"pipe":["puis","ensuite","après","et puis","suivi de","⟶","then","after that","followed by","once done","next"],"conditional":["si","s'il y a","s'il existe","au cas où","if","when","in case","whenever","as long as","quand","lorsque"],"else":["sinon","autrement","dans le cas contraire"],"store":["stocke","garde","mémorise","sauvegarde","conserve","save","remember","store","keep track","maintain state","log"],"session_close":["archive la session","clôture","ferme la session","⊜","scelle","finalize","wrap up","commit","done","finished","terminé","fini"],"lazy_load":["en attente","si besoin","à la demande","⌒"]},"output_types":{"prose":["en prose","en texte","en français","explique","explain","describe","summary","as text"],"outline":["liste","en liste","résumé structuré","outline","list of","enumerate","as a list","step by step","étapes"],"STÈLE":["en stèle","en glyphes","chaîne stèle"],"table":["tableau","en tableau","table","as table","comparison","versus","compare"],"signature":["signature","court","court résumé"],"code":["as code","generate code","implement","en code","code"]},"shortcuts":{"active la résonance sur tout":"RESONE[◈, layers=all]","transforme en stèle":"COMPRESS[◈, format=STÈLE] → signature","check your work":"SCAN[◈, focus=anomalies] → outline","check for simpler approaches":"SCAN[◈, focus=structure] → outline","review the current project":"SCAN[◈, focus=structure] → outline","check all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","analyze the codebase":"ANALYZE[◈, ctx=technique, depth=3] → outline","analyze design screenshots":"ANALYZE[◈, ctx=technique, depth=2] → outline","generate comprehensive analysis":"ANALYZE[◈, ▲] → prose","avoid using deprecated":"FILTER[◈, ⊘deprecated]","never use any":"FILTER[◈, ⊘any]","never log sensitive data":"FILTER[◈, ⊘sensitive]","avoid clutter":"FILTER[◈, ⊘unnecessary]","use strict typescript":"APPLY[@convention::typescript-strict, ◈]","implement clean architecture":"APPLY[@convention::clean-arch, ◈]","implement dependency injection":"APPLY[@convention::di, ◈]","use factory functions":"APPLY[@convention::factory, ◈]","write unit tests for new code":"VALIDATE[*, scope=tests] → outline","ensure all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","make diff as small as possible":"COMPRESS[◈, ratio=max]","keep it simple":"COMPRESS[◈, ratio=balanced]","minimize impact":"COMPRESS[◈, ratio=max]","document your project structure":"EXPAND[seed=◈, ctx=structure] → prose","generate a commit message":"EXPAND[seed=◈, ctx=git] → prose","provide context":"EXPAND[seed=◈] → prose","refactor continuously":"TRANSDUIT[◈, from=current, to=clean]","refactor beyond scope":"TRANSDUIT[◈, from=verbose, to=minimal]","write idiomatic code":"TRANSDUIT[◈, from=generic, to=idiomatic]","scaffold from this":"CLONE[source=◈, scope=structure] → §1","same as but with":"CLONE[source=◈, adapt=oui]","copy this component":"CLONE[source=◈, scope=composant] → §1","replicate this pattern":"CLONE[source=◈, scope=structure] → §1","always use typescript strict mode":"APPLY[@convention::ts-strict, ◈]","always handle errors":"VALIDATE[◈, scope=error] ⟶ DEBUG[◈, focus=error]","always write tests":"VALIDATE[◈, scope=tests]","always follow naming conventions":"APPLY[@convention::naming, ◈]","never use any type":"FILTER[◈, ⊘any]","never commit secrets":"FILTER[◈, ⊘secrets]","never ignore errors":"VALIDATE[◈, scope=error] ? null : DEBUG[◈, focus=error]","prefer functional components":"APPLY[@convention::functional, ◈]","prefer composition over inheritance":"TRANSDUIT[◈, from=oop, to=functional]","prefer explicit over implicit":"EXPAND[seed=◈, ctx=explicit]","optimize for performance":"ANALYZE[ctx=technique, focus=performance, ▲]","optimize bundle size":"COMPRESS[◈, ratio=max]","keep code simple":"COMPRESS[◈, ratio=balanced]","keep it minimal":"COMPRESS[◈, ratio=max]","keep functions small":"FILTER[◈, ⊘complexity]","implement error handling":"APPLY[@convention::error-handling, ◈]","implement proper state management":"APPLY[@convention::state, ◈]","write unit tests":"VALIDATE[◈, scope=tests] → outline","write clean code":"APPLY[@convention::clean-code, ◈]","follow best practices":"APPLY[@convention::best-practices, ◈]","follow the existing patterns":"CLONE[source=◈, scope=structure]","follow project conventions":"APPLY[@convention::project, ◈]","generate commit message":"EXPAND[seed=◈, ctx=git] → prose","generate documentation":"EXPAND[seed=◈, ctx=docs] → prose","fix the bug":"DEBUG[◈, focus=error]","debug this error":"DEBUG[◈, focus=error]","investigate the issue":"SCAN[◈, focus=anomalies] ⟶ DEBUG[◈]","build for production":"DEPLOY[◈, env=prod]","check this code for issues":"SCAN[◈, focus=anomalies] → outline","analyze in depth":"ANALYZE[◈, ▲]","archive the session":"⊜","copy this component and adapt it":"CLONE[source=◈, adapt=oui] → §1","duplicate this function":"CLONE[source=◈, scope=fonction] → §1","same structure as":"CLONE[source=◈, adapt=oui, scope=structure]","write the tests":"VALIDATE[◈, scope=tests]","deploy to production":"DEPLOY[◈, env=prod]","create a new component":"CREATE[◈, type=component, from=scratch]","generate a boilerplate":"CREATE[◈, type=component, from=template]","scaffold a new api endpoint":"CREATE[◈, type=api, from=scratch]","create a new function":"CREATE[◈, type=function, from=scratch]","init a new config file":"CREATE[◈, type=config, from=scratch]","generate a test file":"CREATE[◈, type=test, from=scratch]","create a typescript interface":"CREATE[◈, type=schema, from=scratch]","build a new service":"CREATE[◈, type=api, from=scratch]","add error handling":"ADD[target=◈, what=error-handling]","add error handling to all":"ADD[target=*, what=error-handling]","add validation":"ADD[target=◈, what=validation]","add logging":"ADD[target=◈, what=logging]","add pagination":"ADD[target=◈, what=pagination]","add authentication":"ADD[target=◈, what=auth]","add a field to":"ADD[target=◈, what=field]","inject the dependency":"ADD[target=◈, what=feature]","wire up the api":"ADD[target=◈, what=feature]","find all usages":"FIND[input=*, type=usage, pattern=◈]","find all references":"FIND[input=*, type=usage, pattern=◈]","where is this function called":"FIND[input=*, type=usage, pattern=◈]","search for this pattern":"FIND[input=*, type=pattern, pattern=◈]","find all imports of":"FIND[input=*, type=import, pattern=◈]","where is this defined":"FIND[input=*, type=definition, pattern=◈]","create a responsive navbar":"CREATE[◈, type=component, from=scratch]","create a modal component":"CREATE[◈, type=component, from=scratch]","create a custom hook for api calls":"CREATE[◈, type=function, from=scratch]","create a data table with sorting":"CREATE[◈, type=component, from=scratch]","create a toast notification system":"CREATE[◈, type=component, from=scratch]","create a form with validation":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation]","add dark mode toggle":"ADD[target=◈, what=feature]","add loading spinner":"ADD[target=◈, what=feature]","add infinite scroll":"ADD[target=◈, what=pagination]","add keyboard shortcuts":"ADD[target=◈, what=feature]","add skeleton loader":"ADD[target=◈, what=feature]","create a rest api endpoint":"CREATE[◈, type=api, from=scratch]","create a webhook handler":"CREATE[◈, type=api, from=scratch]","create a cron job":"CREATE[◈, type=function, from=scratch]","create a cache layer":"ADD[target=◈, what=feature]","add rate limiting":"ADD[target=◈, what=feature]","add cors configuration":"ADD[target=◈, what=feature]","add retry logic":"ADD[target=◈, what=error-handling]","add request validation":"ADD[target=◈, what=validation]","add database migration":"CREATE[◈, type=config, from=scratch]","add typescript types":"ADD[target=◈, what=field]","fix all type errors":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=types]","infer the return type":"ANALYZE[◈, ctx=technique, depth=2] → prose","add strict null checks":"VALIDATE[◈, scope=types]","add generic types":"ADD[target=◈, what=field]","write tests for this function":"CREATE[◈, type=test, from=scratch]","add integration tests":"ADD[target=◈, what=feature]","mock this service":"CLONE[source=◈, adapt=oui, scope=fonction]","test edge cases":"VALIDATE[◈, scope=tests]","check test coverage":"SCAN[◈, focus=tests] → outline","add snapshot tests":"ADD[target=◈, what=feature]","why is this not working":"DEBUG[◈, focus=logic]","trace this error":"DEBUG[◈, focus=error]","find the memory leak":"DEBUG[◈, focus=performance]","why is this slow":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","fix the undefined error":"DEBUG[◈, focus=error]","fix the null pointer":"DEBUG[◈, focus=error]","debug the race condition":"DEBUG[◈, focus=logic]","split this into smaller functions":"TRANSDUIT[◈, from=verbose, to=minimal]","remove code duplication":"FILTER[◈, ⊘duplicate] ⟶ CLONE[source=◈, adapt=oui]","make this more readable":"TRANSDUIT[◈, from=complex, to=readable]","extract this into a separate file":"TRANSDUIT[◈, from=inline, to=module]","convert class to functional":"TRANSDUIT[◈, from=oop, to=functional]","simplify this logic":"COMPRESS[◈, ratio=balanced]","rename all instances":"FIND[input=*, type=usage, pattern=◈] ⟶ TRANSDUIT[*, from=current, to=new]","document this function":"EXPAND[seed=◈, ctx=docs] → prose","add jsdoc comments":"EXPAND[seed=◈, ctx=jsdoc] → code","generate api documentation":"EXPAND[seed=◈, ctx=docs] → prose","write a commit message":"EXPAND[seed=◈, ctx=git] → prose","create a changelog entry":"EXPAND[seed=◈, ctx=changelog] → prose","explain what this does":"ANALYZE[◈, ctx=technique, depth=2] → prose","explain this code":"ANALYZE[◈, ctx=technique, depth=2] → prose","review my changes":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=2]","check for breaking changes":"SCAN[◈, focus=anomalies] ⟶ COMPARE[a=◈, b=◊]","prepare for code review":"ANALYZE[◈, ctx=technique, depth=2] ⟶ VALIDATE[◈, scope=tests]","check what changed":"COMPARE[a=◈, b=◊] → outline","check for security vulnerabilities":"SCAN[◈, focus=security] → outline","add input sanitization":"ADD[target=◈, what=validation]","check for sql injection":"SCAN[◈, focus=security]","add csrf protection":"ADD[target=◈, what=auth]","find exposed secrets":"FIND[input=*, type=pattern, pattern=◈]","audit dependencies":"SCAN[◈, focus=security] ⟶ FIND[input=*, type=import, pattern=◈]","optimize this query":"ANALYZE[◈, ctx=technique, ▲] ⟶ TRANSDUIT[◈, from=slow, to=optimized]","reduce bundle size":"COMPRESS[◈, ratio=max]","lazy load this component":"ADD[target=◈, what=feature]","memoize this function":"ADD[target=◈, what=feature]","profile the performance":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","remove unused imports":"FILTER[◈, ⊘unused]","separate concerns":"TRANSDUIT[◈, from=monolithic, to=modular]","create a service layer":"CREATE[◈, type=api, from=scratch]","add dependency injection":"ADD[target=◈, what=feature]","implement repository pattern":"APPLY[@convention::repository, ◈]","create a middleware":"CREATE[◈, type=function, from=scratch]","full code review":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=3] ⟶ VALIDATE[◈, scope=tests] → outline","fix and test":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=tests]","refactor and document":"TRANSDUIT[◈, from=complex, to=readable] ⟶ EXPAND[seed=◈, ctx=docs] → prose","create and validate":"CREATE[◈, type=component, from=scratch] ⟶ VALIDATE[◈, scope=types]","build and deploy":"VALIDATE[*, scope=tests] ? DEPLOY[◈, env=prod] : DEBUG[*, focus=error]","full feature workflow":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation] ⟶ CREATE[◈, type=test, from=scratch] ⟶ VALIDATE[*, scope=tests]"}};
+
+let DB = JSON.parse(JSON.stringify(DEFAULT));
+
+function loadDB() {
+  const saved = localStorage.getItem('rosetta-spc');
+  if (saved) try { DB = JSON.parse(saved); } catch(e) {}
+}
+
+function saveDB() {
+  localStorage.setItem('rosetta-spc', JSON.stringify(DB));
+  const bar = document.getElementById('status-bar');
+  bar.classList.add('show');
+  setTimeout(() => bar.classList.remove('show'), 1800);
+}
+
+function norm(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['']/g,"'");
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  render();
+}
+
+function updateCounts() {
+  document.getElementById('cnt-shortcuts').textContent = Object.keys(DB.shortcuts).length;
+  document.getElementById('cnt-operators').textContent = DB.operators.length;
+  document.getElementById('cnt-modifiers').textContent = Object.keys(DB.modifiers).length;
+  document.getElementById('cnt-outputs').textContent = Object.keys(DB.output_types).length;
+}
+
+const PAGE_SIZE = 20;
+let shortcutPage = 0;
+let shortcutFilter = '';
+
+function renderShortcuts() {
+  const el = document.getElementById('shortcuts-list');
+  let entries = Object.entries(DB.shortcuts);
+
+  // Filtre recherche
+  if (shortcutFilter) {
+    const f = shortcutFilter.toLowerCase();
+    entries = entries.filter(([k, v]) =>
+      k.toLowerCase().includes(f) || v.toLowerCase().includes(f)
+    );
+  }
+
+  if (!entries.length) {
+    el.innerHTML = '<p style="color:var(--muted);padding:20px 0">Aucun raccourci trouvé.</p>';
+    return;
+  }
+
+  const totalPages = Math.ceil(entries.length / PAGE_SIZE);
+  if (shortcutPage >= totalPages) shortcutPage = totalPages - 1;
+  const page = entries.slice(shortcutPage * PAGE_SIZE, (shortcutPage + 1) * PAGE_SIZE);
+
+  const rows = page.map(([phrase, dsl]) => `
+    <div class="shortcut-row">
+      <span class="shortcut-phrase">${esc(phrase)}</span>
+      <span class="shortcut-arrow">→</span>
+      <span class="shortcut-dsl">${esc(dsl)}</span>
+      <div class="shortcut-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editShortcut('${esc(phrase)}')">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteShortcut('${esc(phrase)}')">✕</button>
+      </div>
+    </div>`).join('');
+
+  const pagination = totalPages > 1 ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost btn-sm" onclick="scPage(-1)" ${shortcutPage===0?'disabled':''}>← Précédent</button>
+      <span style="font-size:12px;color:var(--muted)">
+        Page <strong style="color:var(--text)">${shortcutPage+1}</strong> / ${totalPages}
+        &nbsp;·&nbsp; ${entries.length} raccourcis${shortcutFilter?' trouvés':''}
+      </span>
+      <button class="btn btn-ghost btn-sm" onclick="scPage(1)" ${shortcutPage===totalPages-1?'disabled':''}>Suivant →</button>
+    </div>` : `<div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:right">${entries.length} raccourcis</div>`;
+
+  el.innerHTML = rows + pagination;
+}
+
+function scPage(dir) {
+  shortcutPage = Math.max(0, shortcutPage + dir);
+  renderShortcuts();
+}
+
+function filterShortcuts(val) {
+  shortcutFilter = val;
+  shortcutPage = 0;
+  renderShortcuts();
+}
+
+function renderOperators() {
+  const el = document.getElementById('operators-list');
+  el.innerHTML = DB.operators.map((op, oi) => {
+    const hasParams = Object.keys(op.params).length > 0;
+    const paramsHTML = hasParams ? Object.entries(op.params).map(([pname, pvals]) => `
+      <div class="param-group">
+        <div class="param-name">${esc(pname)} <span style="color:var(--muted);font-weight:400;font-size:10px">paramètre</span></div>
+        ${Object.entries(pvals).map(([val, triggers]) => `
+          <div class="param-value">
+            <div class="param-value-name">${esc(val)}</div>
+            <div class="tags">${triggers.map((t,ti) => `
+              <span class="tag">${esc(t)}<span class="tag-del" onclick="removeParamTrigger(${oi},'${esc(pname)}','${esc(val)}',${ti})">×</span></span>`).join('')}
+              <span class="tag tag-add" onclick="addParamTrigger(${oi},'${esc(pname)}','${esc(val)}')">+ mot</span>
+            </div>
+          </div>`).join('')}
+      </div>`).join('') : '<p style="color:var(--muted);font-size:11px;margin-top:8px">Pas de paramètres contextuels pour cet opérateur.</p>';
+
+    return `<div class="card">
+      <div class="card-header" onclick="toggleCard('op-${oi}')">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="card-id">${op.id}</span>
+          <span class="card-default">${esc(op.default)}</span>
+        </div>
+        <span class="chevron" id="chev-op-${oi}">▶</span>
+      </div>
+      <div class="card-body" id="op-${oi}">
+        <div class="field-label">Déclencheurs</div>
+        <div class="tags">${op.triggers.map((t,ti) => `
+          <span class="tag">${esc(t)}<span class="tag-del" onclick="removeTrigger(${oi},${ti})">×</span></span>`).join('')}
+          <span class="tag tag-add" onclick="addTrigger(${oi})">+ mot</span>
+        </div>
+        <div class="field-label" style="margin-top:14px">Paramètres contextuels</div>
+        ${paramsHTML}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderModifiers() {
+  const el = document.getElementById('modifiers-list');
+  el.innerHTML = Object.entries(DB.modifiers).map(([name, triggers]) => `
+    <div class="mod-card">
+      <div class="mod-name">${esc(name)}</div>
+      <div class="tags">${triggers.map((t,ti) => `
+        <span class="tag">${esc(t)}<span class="tag-del" onclick="removeModifierTrigger('${esc(name)}',${ti})">×</span></span>`).join('')}
+        <span class="tag tag-add" onclick="addModifierTrigger('${esc(name)}')">+ mot</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderOutputs() {
+  const el = document.getElementById('outputs-list');
+  el.innerHTML = Object.entries(DB.output_types).map(([name, triggers]) => `
+    <div class="mod-card">
+      <div class="mod-name" style="color:var(--accent)">${esc(name)}</div>
+      <div class="tags">${triggers.map((t,ti) => `
+        <span class="tag">${esc(t)}<span class="tag-del" onclick="removeOutputTrigger('${esc(name)}',${ti})">×</span></span>`).join('')}
+        <span class="tag tag-add" onclick="addOutputTrigger('${esc(name)}')">+ mot</span>
+      </div>
+    </div>`).join('');
+}
+
+function render() {
+  updateCounts();
+  renderShortcuts();
+  renderOperators();
+  renderModifiers();
+  renderOutputs();
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(id);
+  const chev = document.getElementById('chev-' + id);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function toggleAddShortcut() {
+  document.getElementById('add-shortcut-form').classList.toggle('open');
+}
+
+function addShortcut() {
+  const phrase = document.getElementById('sc-phrase').value.trim();
+  const dsl = document.getElementById('sc-dsl').value.trim();
+  if (!phrase || !dsl) return;
+  DB.shortcuts[phrase] = dsl;
+  document.getElementById('sc-phrase').value = '';
+  document.getElementById('sc-dsl').value = '';
+  document.getElementById('add-shortcut-form').classList.remove('open');
+  saveDB(); render();
+}
+
+function deleteShortcut(phrase) {
+  if (!confirm('Supprimer ce raccourci ?')) return;
+  delete DB.shortcuts[phrase];
+  saveDB(); render();
+}
+
+function editShortcut(phrase) {
+  const newDsl = prompt('Nouveau DSL pour :\n"' + phrase + '"', DB.shortcuts[phrase]);
+  if (newDsl === null) return;
+  DB.shortcuts[phrase] = newDsl.trim();
+  saveDB(); render();
+}
+
+function addTrigger(oi) {
+  const word = prompt('Nouveau mot déclencheur pour ' + DB.operators[oi].id + ' :');
+  if (!word) return;
+  DB.operators[oi].triggers.push(word.trim());
+  saveDB(); render();
+}
+
+function removeTrigger(oi, ti) {
+  DB.operators[oi].triggers.splice(ti, 1);
+  saveDB(); render();
+}
+
+function addParamTrigger(oi, pname, val) {
+  const word = prompt('Nouveau mot pour le paramètre ' + pname + '=' + val + ' :');
+  if (!word) return;
+  DB.operators[oi].params[pname][val].push(word.trim());
+  saveDB(); render();
+}
+
+function removeParamTrigger(oi, pname, val, ti) {
+  DB.operators[oi].params[pname][val].splice(ti, 1);
+  saveDB(); render();
+}
+
+function toggleAddModifier() {
+  document.getElementById('add-modifier-form').classList.toggle('open');
+}
+
+function addModifier() {
+  const name = document.getElementById('mod-name').value.trim();
+  const triggers = document.getElementById('mod-triggers').value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!name || !triggers.length) return;
+  DB.modifiers[name] = triggers;
+  document.getElementById('mod-name').value = '';
+  document.getElementById('mod-triggers').value = '';
+  document.getElementById('add-modifier-form').classList.remove('open');
+  saveDB(); render();
+}
+
+function addModifierTrigger(name) {
+  const word = prompt('Nouveau mot pour le modificateur "' + name + '" :');
+  if (!word) return;
+  DB.modifiers[name].push(word.trim());
+  saveDB(); render();
+}
+
+function removeModifierTrigger(name, ti) {
+  DB.modifiers[name].splice(ti, 1);
+  saveDB(); render();
+}
+
+function addOutputTrigger(name) {
+  const word = prompt('Nouveau mot déclencheur pour le type "' + name + '" :');
+  if (!word) return;
+  DB.output_types[name].push(word.trim());
+  saveDB(); render();
+}
+
+function removeOutputTrigger(name, ti) {
+  DB.output_types[name].splice(ti, 1);
+  saveDB(); render();
+}
+
+function transpile(input) {
+  const n = norm(input);
+  for (const [phrase, dsl] of Object.entries(DB.shortcuts)) {
+    if (n.includes(norm(phrase))) return { dsl, source: 'shortcut' };
+  }
+  let op = null;
+  for (const o of DB.operators) {
+    if (o.triggers.some(t => n.includes(norm(t)))) { op = o; break; }
+  }
+  if (!op) return { dsl: null };
+  const params = {};
+  for (const [pname, pvals] of Object.entries(op.params)) {
+    for (const [val, triggers] of Object.entries(pvals)) {
+      if (triggers.some(t => n.includes(norm(t)))) { params[pname] = val; break; }
+    }
+  }
+  const mods = {};
+  for (const [key, triggers] of Object.entries(DB.modifiers)) {
+    if (triggers.some(t => n.includes(norm(t)))) mods[key] = true;
+  }
+  let out = null;
+  for (const [type, triggers] of Object.entries(DB.output_types)) {
+    if (triggers.some(t => n.includes(norm(t)))) { out = type; break; }
+  }
+  const extras = [];
+  let subject = '◈';
+  if (params.skill) { subject = params.skill + ', ◈'; }
+  if (params.ctx) extras.push('ctx=' + params.ctx);
+  if (params.depth) extras.push('depth=' + params.depth);
+  if (params.focus) extras.push('focus=' + params.focus);
+  if (params.layers) extras.push('layers=' + params.layers);
+  if (params.format) extras.push('format=' + params.format);
+  if (params.ratio) extras.push('ratio=' + params.ratio);
+  if (params.from) extras.push('from=' + params.from);
+  if (params.to) extras.push('to=' + params.to);
+  if (mods['▲_max']) extras.push('▲');
+  let dsl = op.id + '[' + subject + (extras.length ? ', ' + extras.join(', ') : '') + ']';
+  if (mods.store) dsl += ' → §1';
+  else if (out) dsl += ' → ' + out;
+  if (mods.session_close) dsl += ' ⟶ ⊜';
+  return { dsl, source: 'rules', op: op.id };
+}
+
+function runTest() {
+  const input = document.getElementById('test-input').value.trim();
+  if (!input) return;
+  const res = transpile(input);
+  const tP = Math.ceil(input.length / 4);
+  const el = document.getElementById('test-result');
+  if (!res.dsl) {
+    el.innerHTML = `<div class="result-box"><p class="no-match">Aucun opérateur reconnu. Essaie un verbe d'action (analyse, scan, compresse…) ou ajoute un raccourci.</p></div>`;
+    return;
+  }
+  const tD = Math.ceil(res.dsl.length / 4);
+  const ratio = Math.round(tP / Math.max(tD, 1));
+  el.innerHTML = `<div class="result-box">
+    <div class="result-label">Prose</div>
+    <div class="result-prose">${esc(input)} ${res.source === 'shortcut' ? '<span style="color:var(--accent3);font-size:10px">[raccourci]</span>' : ''}</div>
+    <div class="result-label">DSL</div>
+    <div class="result-dsl">${esc(res.dsl)}</div>
+    <div class="result-meta">
+      <div class="result-metric"><div class="result-metric-val">~${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
+      <div class="result-metric"><div class="result-metric-val">~${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
+      <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
+    </div>
+  </div>`;
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rosetta.json';
+  a.click();
+}
+
+function importJSON() { document.getElementById('import-input').click(); }
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      DB = JSON.parse(ev.target.result);
+      saveDB(); render();
+    } catch(err) { alert('JSON invalide'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+loadDB();
+render();
+
+// Prompt dynamique — lit DB à chaque appel pour inclure
+// les opérateurs, modificateurs ET types de sortie courants
+function buildSystemPrompt() {
+  const ops = DB.operators.map(o => o.id).join(' ');
+
+  const mods = Object.entries(DB.modifiers)
+    .map(([name, triggers]) => {
+      const samples = triggers.slice(0, 3).join('/');
+      // Associer chaque modificateur à son effet DSL
+      const effects = {
+        '▲_max':        '→ ajoute ▲ au paramètre (profondeur max)',
+        'pipe':         '→ enchaîne avec ⟶',
+        'conditional':  '→ structure A ? B : C',
+        'else':         '→ branche : C du conditionnel',
+        'store':        '→ ajoute → §1 pour stocker le résultat',
+        'session_close':'→ termine par ⊜',
+        'lazy_load':    '→ ajoute ⌒ après le skill'
+      };
+      const effect = effects[name] || '';
+      return `${name}(${samples}) ${effect}`;
+    }).join('\n  ');
+
+  const outputs = Object.entries(DB.output_types)
+    .map(([type, triggers]) => `${type}(${triggers.slice(0,2).join('/')})`)
+    .join(' ');
+
+  return `Tu es un transpileur DSL SPC. Convertis la demande utilisateur en DSL SPC.
+
+OPÉRATEURS: ${ops}
+
+MODIFICATEURS (affectent la forme du DSL généré):
+  ${mods}
+
+TYPES DE SORTIE (mot-clé après →): ${outputs}
+
+SYMBOLES: ◈=input courant §N=référence nommée ?=conditionnel *=wildcard ▲=profondeur max ⊘=exclure ↻=répéter N fois ⟶=pipe ⊜=clôture session ◊=trace précédente
+SYNTAXE: OP[param=val] → TYPE | A ⟶ B | A ? B : C
+
+EXEMPLES:
+"analyse ce code en profondeur" → {"dsl":"ANALYZE[◈, ▲]","explication":"analyse profonde du code","tokens_prose":6,"tokens_spc":2}
+"puis archive la session" → {"dsl":"⊜","explication":"clôture session","tokens_prose":4,"tokens_spc":1}
+"retourne une liste" → {"dsl":"SCAN[◈] → outline","explication":"scan avec sortie liste","tokens_prose":3,"tokens_spc":2}
+"si bug trouvé alors debug sinon archive" → {"dsl":"SCAN[◈] ? DEBUG[◈, focus=error] : ⊜","explication":"conditionnel debug/archive","tokens_prose":8,"tokens_spc":4}
+
+RÈGLE CRITIQUE: JSON strict uniquement.
+INTERDIT: markdown, backticks, commentaires, texte avant/après, clés sans guillemets, apostrophes simples.
+FORMAT EXACT: {"dsl":"...","explication":"...","tokens_prose":N,"tokens_spc":N}`;
+}
+
+const LOCAL_MODELS = {
+  'google/gemma-3-4b': 'Gemma 3 4B',
+  'mistral-nemo-instruct-2407': 'Mistral Nemo Instruct 2407',
+  'Qwen2.5-Coder-7B-Instruct-Q4_K_M': 'Qwen2.5-Coder 7B Instruct Q4_K_M'
+};
+
+function currentModelLabel() {
+  const model = document.getElementById('lm-model')?.value.trim() || '';
+  return LOCAL_MODELS[model] || model || 'IA locale';
+}
+
+function parseJSONTolerant(candidate) {
+  let txt = String(candidate || '').trim();
+  if (!txt) throw new Error('Réponse JSON vide.');
+
+  // 1) JSON strict.
+  try { return JSON.parse(txt); } catch (_) {}
+
+  // 2) Réparation fréquente des LLM locaux : {dsl: "..."} au lieu de {"dsl":"..."}.
+  let repaired = txt
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_-]*)\s*:/g, '$1"$2":')
+    .replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, function(_, value) {
+      return ':"' + value.replace(/"/g, '\\"') + '"';
+    });
+
+  try { return JSON.parse(repaired); } catch (_) {}
+
+  // 3) Dernier secours : extraction directe du champ dsl si le modèle a presque respecté le format.
+  const dslMatch = txt.match(/["']?dsl["']?\s*:\s*["']([^"']+)["']/i);
+  if (dslMatch) {
+    return {
+      dsl: dslMatch[1].trim(),
+      explication: 'DSL extrait depuis une réponse JSON non stricte.',
+      tokens_prose: 0,
+      tokens_spc: Math.ceil(dslMatch[1].length / 4)
+    };
+  }
+
+  // 4) Dernier secours bis : extraction d'une forme DSL SPC présente dans le texte.
+  const opNames = (typeof DB !== 'undefined' ? DB.operators.map(o => o.id) : ['SCAN','ANALYZE','COMPARE','RESONE','TRANSDUIT','COMPRESS','APPLY','EXPAND','FILTER','ITERATE','CLONE','VALIDATE','DEBUG','DEPLOY']).join('|');
+  const opMatch = txt.match(new RegExp('\\b(' + opNames + ')\\[[^\\n{}]+\\](?:\\s*(?:→|⟶)\\s*[^\\n{}]+)?'));
+  if (opMatch) {
+    return {
+      dsl: opMatch[0].trim(),
+      explication: 'DSL extrait depuis une réponse non JSON du modèle local.',
+      tokens_prose: 0,
+      tokens_spc: Math.ceil(opMatch[0].length / 4)
+    };
+  }
+
+  throw new Error('Réponse impossible à convertir en JSON strict : ' + txt.slice(0, 180));
+}
+
+function extractFirstJSONObject(text) {
+  if (!text) throw new Error('Réponse vide du modèle local.');
+  const cleaned = String(text)
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim();
+
+  // Cas idéal ou presque idéal.
+  try { return parseJSONTolerant(cleaned); } catch (_) {}
+
+  // Cas fréquent : une phrase précède ou suit l'objet.
+  const start = cleaned.indexOf('{');
+  if (start !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let quote = null;
+
+    for (let i = start; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escaped) { escaped = false; continue; }
+      if (ch === '\\') { escaped = true; continue; }
+      if ((ch === '"' || ch === "'") && !inString) { inString = true; quote = ch; continue; }
+      if (ch === quote && inString) { inString = false; quote = null; continue; }
+      if (inString) continue;
+      if (ch === '{') depth++;
+      if (ch === '}') depth--;
+      if (depth === 0) {
+        const candidate = cleaned.slice(start, i + 1);
+        return parseJSONTolerant(candidate);
+      }
+    }
+  }
+
+  // Dernier essai sans accolades complètes.
+  return parseJSONTolerant(cleaned);
+}
+
+function normalizeAIResult(parsed, prose) {
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Le modèle n’a pas renvoyé un objet JSON.');
+  }
+  const dsl = String(parsed.dsl || '').trim();
+  if (!dsl) throw new Error('Le JSON reçu ne contient pas de champ "dsl".');
+  return {
+    dsl,
+    explication: String(parsed.explication || parsed.explanation || 'Traduction SPC générée localement.'),
+    tokens_prose: Number(parsed.tokens_prose) || Math.ceil(prose.length / 4),
+    tokens_spc: Number(parsed.tokens_spc) || Math.ceil(dsl.length / 4)
+  };
+}
+
+function syncModelFromSelect() {
+  const select = document.getElementById('lm-model-select');
+  const input = document.getElementById('lm-model');
+  if (!select || !input || select.value === 'custom') return;
+  input.value = select.value;
+}
+
+function syncCustomModel() {
+  const select = document.getElementById('lm-model-select');
+  const input = document.getElementById('lm-model');
+  if (!select || !input) return;
+  const known = Object.keys(LOCAL_MODELS);
+  select.value = known.includes(input.value.trim()) ? input.value.trim() : 'custom';
+}
+
+async function testConnection() {
+  const url = document.getElementById('lm-url').value.trim();
+  const status = document.getElementById('lm-status');
+  status.textContent = 'Test…'; status.style.color = 'var(--muted)';
+  try {
+    const r = await fetch(url + '/v1/models', { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    const models = d.data?.map(m => m.id).join(', ') || '—';
+    status.textContent = '✓ Connecté · ' + models;
+    status.style.color = 'var(--accent)';
+  } catch(e) {
+    status.textContent = '✗ ' + (e.message.includes('fetch') ? 'LM Studio non démarré' : e.message);
+    status.style.color = 'var(--danger)';
+  }
+}
+
+function setLMInput(text) { document.getElementById('lm-input').value = text; }
+
+async function runAI() {
+  const prose = document.getElementById('lm-input').value.trim();
+  if (!prose) return;
+  const url   = document.getElementById('lm-url').value.trim();
+  const model = document.getElementById('lm-model').value.trim();
+  const el    = document.getElementById('lm-result');
+
+  // ── PRIORITÉ 1 : raccourcis BDD (déterministe, zéro appel IA) ──────────────
+  const shortcut = transpile(prose);
+  if (shortcut.dsl && shortcut.source === 'shortcut') {
+    const tP = Math.ceil(prose.length / 4);
+    const tD = Math.ceil(shortcut.dsl.length / 4);
+    const ratio = Math.round(tP / Math.max(tD, 1));
+    el.innerHTML = `<div class="result-box" style="margin-top:12px">
+      <div class="result-label">Prose</div>
+      <div class="result-prose" style="color:var(--muted)">${esc(prose)}</div>
+      <div class="result-label">DSL <span style="font-size:10px;color:var(--accent2);margin-left:8px">raccourci BDD · IA non consultée</span></div>
+      <div class="result-dsl" style="font-size:18px">${esc(shortcut.dsl)}</div>
+      <div style="font-size:12px;color:var(--muted);margin:8px 0 12px">Correspondance exacte dans la base de règles.</div>
+      <div class="result-meta">
+        <div class="result-metric"><div class="result-metric-val">${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
+        <div class="result-metric"><div class="result-metric-val">${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
+        <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('${shortcut.dsl.replace(/'/g,'\\\'')}')">Copier DSL</button>
+      </div>
+    </div>`;
+    document.getElementById('lm-status').textContent = '✓ Raccourci BDD — IA non consultée';
+    document.getElementById('lm-status').style.color = 'var(--accent2)';
+    return;
+  }
+
+  // ── PRIORITÉ 2 : IA locale (si aucun raccourci ne correspond) ──────────────
+  el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:14px 0"><span class="spinner"></span>IA locale traduit…</div>';
+
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          { role: 'user',   content: prose }
+        ],
+        temperature: 0,
+        top_p: 0.9,
+        max_tokens: 200,
+        stream: false
+      }),
+      signal: AbortSignal.timeout(20000)
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      const detail = data.error?.message || data.message || JSON.stringify(data).slice(0, 240);
+      throw new Error('Erreur LM Studio HTTP ' + res.status + (detail && detail !== '{}' ? ' · ' + detail : ''));
+    }
+
+    const raw  = data.choices?.[0]?.message?.content?.trim() || '';
+    const parsed = normalizeAIResult(extractFirstJSONObject(raw), prose);
+
+    const tP = parsed.tokens_prose;
+    const tD = parsed.tokens_spc;
+    const ratio = Math.round(tP / Math.max(tD, 1));
+
+    el.innerHTML = `<div class="result-box" style="margin-top:12px">
+      <div class="result-label">Prose</div>
+      <div class="result-prose" style="color:var(--muted)">${esc(prose)}</div>
+      <div class="result-label">DSL <span style="font-size:10px;color:var(--accent2);margin-left:8px">généré par ${esc(currentModelLabel())} · zéro token cloud</span></div>
+      <div class="result-dsl" style="font-size:18px">${esc(parsed.dsl)}</div>
+      <div style="font-size:12px;color:var(--muted);margin:8px 0 12px">${esc(parsed.explication||'')}</div>
+      <div class="result-meta">
+        <div class="result-metric"><div class="result-metric-val">${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
+        <div class="result-metric"><div class="result-metric-val">${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
+        <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('${parsed.dsl.replace(/'/g,'\\\'')}')">Copier DSL</button>
+        <button class="btn btn-ghost btn-sm" onclick="addToShortcuts('${prose.replace(/'/g,'\\\'')}','${parsed.dsl.replace(/'/g,'\\\'')}')">+ Ajouter aux raccourcis</button>
+      </div>
+    </div>`;
+
+    document.getElementById('lm-status').textContent = '✓ Connecté · dernière traduction OK · ' + currentModelLabel();
+    document.getElementById('lm-status').style.color = 'var(--accent)';
+
+  } catch(e) {
+    const ruleFallback = transpile(prose);
+    const msg = e.message.includes('fetch') || e.message.includes('Failed')
+      ? 'LM Studio non démarré ou CORS bloqué. Lance : python -m http.server 8080 dans le dossier.'
+      : e.message;
+    el.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:12px;background:rgba(240,90,90,.08);border-radius:6px;margin-top:10px">✗ ${esc(msg)}<br><br><span style="color:var(--muted)">Conseil : baisse la température à 0.0 ou vérifie que le modèle renvoie uniquement du JSON brut.</span>${ruleFallback.dsl ? `<br><br><span style="color:var(--accent2)">Fallback sans IA :</span> <span style="color:var(--accent)">${esc(ruleFallback.dsl)}</span>` : ''}</div>`;
+  }
+}
+
+function addToShortcuts(phrase, dsl) {
+  if (!DB.shortcuts[phrase]) {
+    DB.shortcuts[phrase] = dsl;
+    saveDB(); render();
+    const bar = document.getElementById('status-bar');
+    bar.textContent = 'Raccourci ajouté !';
+    bar.classList.add('show');
+    setTimeout(() => { bar.textContent = 'Sauvegardé'; bar.classList.remove('show'); }, 2000);
+  }
+}
+
+</script>
+</body>
+</html>
