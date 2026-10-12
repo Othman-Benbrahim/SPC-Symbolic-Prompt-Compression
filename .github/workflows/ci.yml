@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --no-audit --no-fund
+      - name: Fichiers générés à jour (rosetta.html, SPC_SKILL.md, README.md)
+        run: node build.js --check
+      - name: Schéma de rosetta.json (raccourcis, défauts, collisions, docs)
+        run: node validate.js
+      - name: Tests
+        run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund && npm install --no-save playwright && npx playwright install --with-deps chromium
+      - name: Éditeur dans Chromium (XSS, import, persistance, zéro réseau)
+        run: npm run test:e2e

@@ -1,282 +1,238 @@
 #!/usr/bin/env node
 /**
- * rosetta.js — Transpileur SPC
+ * rosetta.js — Transpileur SPC (CLI). Toute la logique vit dans core.js.
  *
  * Mode pattern matching (défaut, zéro IA, zéro token) :
  *   node rosetta.js "analyse ce code en profondeur"
  *
- * Mode IA locale via LM Studio (Gemma 3 4B) :
+ * Mode IA locale via LM Studio (API OpenAI-compatible, localhost uniquement) :
  *   node rosetta.js --ai "analyse ce code en profondeur"
- *   node rosetta.js --ai --port 1234 "..."
+ *   node rosetta.js --ai --port 1234 --model qwen2.5-coder-7b-instruct "..."
  *
  * Stdin :
  *   echo "fix the bug" | node rosetta.js --ai
  */
+'use strict';
 
 const fs   = require('fs');
 const path = require('path');
 const http = require('http');
-const rl   = require('readline');
+const SPC  = require('./core');
 
-const RULES = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'rosetta.json'), 'utf8')
-);
-
-// ─── FLAGS ────────────────────────────────────────────────────────────────────
-const args    = process.argv.slice(2);
-const USE_AI  = args.includes('--ai');
-const portIdx = args.indexOf('--port');
-const LM_PORT = portIdx !== -1 ? parseInt(args[portIdx + 1]) : 1234;
 const LM_HOST = 'localhost';
-const input   = args.filter(a => !a.startsWith('--') && isNaN(parseInt(a))).join(' ');
+const DEFAULT_MODEL = 'google/gemma-3-4b';
+const RULES_PATH = path.join(__dirname, 'rosetta.json');
 
-// ─── PATTERN MATCHING ─────────────────────────────────────────────────────────
-function normalize(str) {
-  return str.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/['']/g, "'");
-}
+const USAGE = `Usage : rosetta [options] "instruction en prose"
+        echo "instruction" | rosetta [options]
 
-function matchShortcut(input) {
-  const n = normalize(input);
-  for (const [phrase, dsl] of Object.entries(RULES.shortcuts)) {
-    if (n.includes(normalize(phrase))) return dsl;
-  }
-  return null;
-}
+Options :
+  --ai             Traduire via un modèle local (LM Studio). Les raccourcis de la
+                   BDD restent prioritaires ; repli sur les règles si indisponible.
+  --port <N>       Port de LM Studio (1-65535, défaut 1234).
+  --model <id>     Identifiant du modèle LM Studio (défaut ${DEFAULT_MODEL}).
+  --json           Sortie JSON (dsl, source, complete, tokens, avertissements, validation).
+  -h, --help       Afficher cette aide.
+  --               Fin des options (le reste est de la prose).
 
-function detectOperator(input) {
-  const n = normalize(input);
-  for (const op of RULES.operators) {
-    if (op.triggers.some(t => n.includes(normalize(t)))) return op;
-  }
-  return null;
-}
+Codes de sortie : 0 OK · 1 usage · 2 base de règles invalide · 3 aucun opérateur
+                  · 4 DSL produit mais incomplet (une partie de la prose est perdue).`;
 
-function detectParams(input, op) {
-  const n = normalize(input);
-  const params = {};
-  for (const [pname, vals] of Object.entries(op.params || {})) {
-    for (const [val, triggers] of Object.entries(vals)) {
-      if (triggers.some(t => n.includes(normalize(t)))) {
-        params[pname] = val; break;
+class UsageError extends Error {}
+
+// ─── ARGUMENTS ────────────────────────────────────────────────────────────────
+function parseArgs(argv) {
+  const flags = { ai: false, port: 1234, model: DEFAULT_MODEL, json: false, help: false };
+  const words = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--') { words.push(...argv.slice(i + 1)); break; }
+    if (a === '--ai') flags.ai = true;
+    else if (a === '--json') flags.json = true;
+    else if (a === '-h' || a === '--help') flags.help = true;
+    else if (a === '--port' || a.startsWith('--port=')) {
+      const v = a.includes('=') ? a.slice(7) : argv[++i];
+      const p = Number(v);
+      if (v === undefined || !/^\d+$/.test(String(v)) || !Number.isInteger(p) || p < 1 || p > 65535) {
+        throw new UsageError(`--port attend un entier entre 1 et 65535 (reçu : ${v === undefined ? 'rien' : v})`);
       }
+      flags.port = p;
+    } else if (a === '--model' || a.startsWith('--model=')) {
+      const v = a.includes('=') ? a.slice(8) : argv[++i];
+      if (!v || v.startsWith('--')) throw new UsageError('--model attend un identifiant de modèle');
+      flags.model = v;
+    } else if (a.startsWith('--')) {
+      throw new UsageError(`option inconnue : ${a}`);
+    } else {
+      words.push(a);   // les nombres sont conservés (« corrige le bug 404 »)
     }
   }
-  return params;
+  return { flags, input: words.join(' ') };
 }
 
-function detectModifiers(input) {
-  const n = normalize(input);
-  const mods = {};
-  for (const [key, triggers] of Object.entries(RULES.modifiers || {})) {
-    if (triggers.some(t => n.includes(normalize(t)))) mods[key] = true;
+// ─── BASE DE RÈGLES ───────────────────────────────────────────────────────────
+function loadRules(file = RULES_PATH) {
+  let db;
+  try {
+    db = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (e) {
+    const err = new Error(`Impossible de charger ${path.basename(file)} : ${e.message}`);
+    err.exitCode = 2;
+    throw err;
   }
-  return mods;
+  try { SPC.assertDB(db); }
+  catch (e) { e.exitCode = 2; throw e; }
+  return db;
 }
 
-function detectOutput(input) {
-  const n = normalize(input);
-  for (const [type, triggers] of Object.entries(RULES.output_types || {})) {
-    if (triggers.some(t => n.includes(normalize(t)))) return type;
-  }
-  return null;
+// API historique, conservée pour compatibilité (module.exports).
+let RULES = null;
+const rules = () => (RULES || (RULES = loadRules()));
+
+function patternMatch(input, db = rules()) {
+  const r = SPC.transpile(input, db);
+  return { dsl: r.dsl, source: r.source, op: r.ops[0], ops: r.ops, warnings: r.warnings, complete: r.complete };
 }
 
-function patternMatch(input) {
-  const shortcut = matchShortcut(input);
-  if (shortcut) return { dsl: shortcut, source: 'shortcut' };
-
-  const op = detectOperator(input);
-  if (!op) return { dsl: null };
-
-  const params = detectParams(input, op);
-  const mods   = detectModifiers(input);
-  const output = detectOutput(input);
-
-  let subject = '◈';
-  const extras = [];
-  if (params.skill)  subject = `${params.skill}, ◈`;
-  if (params.ctx)    extras.push(`ctx=${params.ctx}`);
-  if (params.depth)  extras.push(`depth=${params.depth}`);
-  if (params.focus)  extras.push(`focus=${params.focus}`);
-  if (params.layers) extras.push(`layers=${params.layers}`);
-  if (params.format) extras.push(`format=${params.format}`);
-  if (params.ratio)  extras.push(`ratio=${params.ratio}`);
-  if (params.from)   extras.push(`from=${params.from}`);
-  if (params.to)     extras.push(`to=${params.to}`);
-  if (params.scope)  extras.push(`scope=${params.scope}`);
-  if (params.env)    extras.push(`env=${params.env}`);
-  if (params.adapt)  extras.push(`adapt=${params.adapt}`);
-  if (mods['▲_max']) extras.push('▲');
-
-  let dsl = `${op.id}[${subject}${extras.length ? ', ' + extras.join(', ') : ''}]`;
-  if (mods.store)          dsl += ' → §1';
-  else if (output)         dsl += ` → ${output}`;
-  if (mods.session_close)  dsl += ' ⟶ ⊜';
-
-  return { dsl, source: 'rules', op: op.id };
-}
-
-// ─── LM STUDIO — prompt dynamique depuis RULES ───────────────────────────────
-function buildSystemPrompt() {
-  const ops = RULES.operators.map(o => o.id).join(' ');
-
-  const modifiers = Object.entries(RULES.modifiers || {})
-    .map(([name, triggers]) => {
-      const samples = triggers.slice(0, 3).join('/');
-      const effects = {
-        '▲_max':        '→ ajoute ▲ (profondeur max)',
-        'pipe':         '→ enchaîne avec ⟶',
-        'conditional':  '→ structure A ? B : C',
-        'else':         '→ branche : C',
-        'store':        '→ ajoute → §1',
-        'session_close':'→ termine par ⊜',
-        'lazy_load':    '→ ajoute ⌒'
-      };
-      return `${name}(${samples}) ${effects[name] || ''}`;
-    }).join('\n  ');
-
-  const outputs = Object.entries(RULES.output_types || {})
-    .map(([type, triggers]) => `${type}(${triggers.slice(0, 2).join('/')})`)
-    .join(' ');
-
-  return `Tu es un transpileur DSL SPC (Symbolic Prompt Compression).
-Convertis les instructions en langage naturel (français ou anglais) vers le DSL SPC.
-
-OPÉRATEURS: ${ops}
-
-MODIFICATEURS:
-  ${modifiers}
-
-TYPES DE SORTIE (après →): ${outputs}
-
-SYMBOLES: ◈=input courant §N=référence ?=conditionnel *=wildcard ▲=max ⊘=exclure ↻=répéter ⟶=pipe ⊜=clôture ◊=trace ⌒=lazy load
-SYNTAXE: OP[param=val] → TYPE | A ⟶ B | A ? B : C
-
-EXEMPLES:
-"analyze this code in depth" → {"dsl":"ANALYZE[◈, ▲]","explication":"analyse profonde","tokens_prose":5,"tokens_spc":2}
-"add error handling to all functions" → {"dsl":"ADD[target=*, what=error-handling]","explication":"injecte gestion erreurs","tokens_prose":7,"tokens_spc":4}
-"create a new react component" → {"dsl":"CREATE[◈, type=component, from=scratch]","explication":"génère composant","tokens_prose":6,"tokens_spc":4}
-"find all usages of this function" → {"dsl":"FIND[input=*, type=usage, pattern=◈]","explication":"recherche utilisations","tokens_prose":7,"tokens_spc":5}
-"validate all tests then archive" → {"dsl":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","explication":"valide puis archive ou debug","tokens_prose":5,"tokens_spc":6}
-
-FORMAT EXACT (JSON strict, rien d'autre):
-{"dsl":"...","explication":"...","tokens_prose":N,"tokens_spc":N}`;
-}
-
-function callLMStudio(prose) {
+// ─── LM STUDIO ────────────────────────────────────────────────────────────────
+function callLMStudio(prose, { port = 1234, model = DEFAULT_MODEL, db = rules(), timeout = 20000 } = {}) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      model: 'google/gemma-3-4b',
+      model,
       messages: [
-        { role: 'system', content: buildSystemPrompt() },
+        { role: 'system', content: SPC.buildSystemPrompt(db) },
         { role: 'user',   content: prose }
       ],
-      temperature: 0.1,
+      temperature: 0,
       max_tokens: 200,
       stream: false
     });
-
     const req = http.request({
-      hostname: LM_HOST,
-      port: LM_PORT,
-      path: '/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
+      hostname: LM_HOST, port, path: '/v1/chat/completions', method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
     }, res => {
       let data = '';
+      res.setEncoding('utf8');
       res.on('data', c => data += c);
       res.on('end', () => {
         try {
           const json = JSON.parse(data);
-          const text = json.choices?.[0]?.message?.content?.trim() || '';
-          const clean = text.replace(/```json|```/g, '').trim();
-          resolve(JSON.parse(clean));
-        } catch(e) {
-          reject(new Error('Réponse Gemma invalide : ' + data.substring(0, 200)));
+          if (res.statusCode >= 400 || json.error) {
+            throw new Error(`HTTP ${res.statusCode} · ${(json.error && json.error.message) || data.slice(0, 200)}`);
+          }
+          const text = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content || '').trim();
+          resolve(SPC.parseAIResponse(text, db));
+        } catch (e) {
+          reject(new Error(`réponse du modèle « ${model} » inexploitable : ${e.message}`));
         }
       });
     });
-
     req.on('error', e => {
-      if (e.code === 'ECONNREFUSED')
-        reject(new Error(`LM Studio introuvable sur le port ${LM_PORT}. Vérifie que le serveur local est démarré.`));
+      if (e.code === 'ECONNREFUSED') reject(new Error(`LM Studio introuvable sur ${LM_HOST}:${port}. Vérifie que le serveur local est démarré.`));
       else reject(e);
     });
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout LM Studio')); });
+    req.setTimeout(timeout, () => { req.destroy(new Error(`délai dépassé (${timeout / 1000}s) en attendant LM Studio`)); });
     req.write(body);
     req.end();
   });
 }
 
 // ─── AFFICHAGE ────────────────────────────────────────────────────────────────
-function display(prose, result, mode) {
-  const tP = result.tokens_prose || Math.ceil(prose.length / 4);
-  const tD = result.tokens_spc   || Math.ceil((result.dsl||'').length / 4);
-  const ratio = Math.round(tP / Math.max(tD, 1));
-  const modeLabel = mode === 'ai' ? '[Gemma 3 4B]' : result.source === 'shortcut' ? '[raccourci]' : '[pattern]';
+function report(prose, result, label) {
+  const tP = SPC.estimateTokens(prose);
+  const tD = SPC.estimateTokens(result.dsl);
+  return {
+    prose, dsl: result.dsl, source: label, explication: result.explication || null,
+    tokens: { prose: tP, dsl: tD, ratio: Math.round((tP / Math.max(tD, 1)) * 10) / 10 },
+    warnings: result.warnings || [],
+    complete: result.complete !== false,
+    validation: SPC.validateDSL(result.dsl, rules())
+  };
+}
 
-  console.log('');
-  console.log('─'.repeat(52));
-  console.log(`PROSE   (~${tP} tokens)`);
-  console.log(`  ${prose.trim()}`);
-  console.log('');
-  console.log(`DSL     (~${tD} tokens — ratio ×${ratio})  ${modeLabel}`);
-  console.log(`  ${result.dsl}`);
-  if (result.explication) {
-    console.log('');
-    console.log(`  → ${result.explication}`);
-  }
-  console.log('─'.repeat(52));
-  console.log('');
+function display(r) {
+  const out = [];
+  out.push('', '─'.repeat(52));
+  out.push(`PROSE   (~${r.tokens.prose} tokens, estimation locale)`);
+  out.push(`  ${r.prose.trim()}`, '');
+  out.push(`DSL     (~${r.tokens.dsl} tokens — ratio ×${r.tokens.ratio})  [${r.source}]`);
+  out.push(`  ${r.dsl}`);
+  if (r.explication) out.push('', `  → ${r.explication}`);
+  if (!r.complete) out.push('', '  ⚠ INSTRUCTION INCOMPLÈTE : une partie de la prose n\'est pas dans le DSL (voir ci-dessous)');
+  if (!r.validation.ok) out.push('', '  ⚠ DSL non conforme au schéma :', ...r.validation.errors.map(e => `    · ${e}`));
+  for (const w of r.warnings) out.push(`  ⚠ ${w}`);
+  out.push('─'.repeat(52), '');
+  console.log(out.join('\n'));
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-async function run(prose) {
-  if (!prose || !prose.trim()) {
-    console.error('Usage: node rosetta.js [--ai] [--port 1234] "ton instruction"');
-    process.exit(1);
-  }
+async function run(prose, flags) {
+  prose = String(prose || '').trim();
+  if (!prose) throw new UsageError('instruction vide');
+  const db = rules();
+  const rule = patternMatch(prose, db);
+  let result = null;
 
-  if (USE_AI) {
-    // Tentative Gemma, fallback pattern si LM Studio indisponible
+  if (flags.ai && rule.source !== 'shortcut') {
     try {
-      const result = await callLMStudio(prose.trim());
-      display(prose, result, 'ai');
-    } catch(e) {
+      const ai = await callLMStudio(prose, { port: flags.port, model: flags.model, db });
+      result = report(prose, { ...ai, warnings: [], complete: true }, `IA locale · ${flags.model}`);
+    } catch (e) {
       console.error(`⚠  IA locale : ${e.message}`);
-      console.error('   Fallback → pattern matching\n');
-      const result = patternMatch(prose.trim());
-      if (!result.dsl) {
-        console.log('⚠  Aucun opérateur reconnu.');
-        return;
+      console.error('   Repli → pattern matching\n');
+    }
+  }
+  if (!result) {
+    if (!rule.dsl) {
+      if (flags.json) console.log(JSON.stringify({ prose, dsl: null, complete: false, warnings: rule.warnings }, null, 2));
+      else {
+        console.log('⚠  Aucun opérateur reconnu.' + (flags.ai ? '' : ' Essaie --ai pour l\'IA locale.'));
+        for (const w of rule.warnings) console.log(`   · ${w}`);
+        console.log('   Verbes reconnus : analyse · scan · fix · validate · deploy · clone…');
       }
-      display(prose, result, 'pattern');
+      return 3;
     }
-  } else {
-    const result = patternMatch(prose.trim());
-    if (!result.dsl) {
-      console.log('⚠  Aucun opérateur reconnu. Essaie --ai pour l\'IA locale.');
-      console.log('   Verbes reconnus: analyse · scan · fix · validate · deploy · clone…');
-      return;
-    }
-    display(prose, result, 'pattern');
+    result = report(prose, rule, rule.source === 'shortcut' ? 'raccourci' : 'règles');
+  }
+  if (flags.json) console.log(JSON.stringify(result, null, 2));
+  else display(result);
+  return result.complete ? 0 : 4;
+}
+
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', c => data += c);
+    process.stdin.on('end', () => resolve(data.replace(/\s+/g, ' ')));
+    process.stdin.on('error', reject);
+  });
+}
+
+async function main(argv) {
+  let parsed;
+  try { parsed = parseArgs(argv); }
+  catch (e) { console.error(`Erreur : ${e.message}\n\n${USAGE}`); return 1; }
+  const { flags } = parsed;
+  if (flags.help) { console.log(USAGE); return 0; }
+
+  let input = parsed.input;
+  if (!input) {
+    if (process.stdin.isTTY) { console.error(USAGE); return 1; }   // pas de blocage sur un TTY vide
+    input = await readStdin();
+  }
+  try {
+    rules();
+    return await run(input, flags);
+  } catch (e) {
+    if (e instanceof UsageError) { console.error(`Erreur : ${e.message}\n\n${USAGE}`); return 1; }
+    console.error(e.message);
+    return e.exitCode || 1;
   }
 }
 
 if (require.main === module) {
-  if (input) {
-    run(input).catch(e => { console.error(e.message); process.exit(1); });
-  } else {
-    const iface = rl.createInterface({ input: process.stdin });
-    const lines = [];
-    iface.on('line', l => lines.push(l));
-    iface.on('close', () => run(lines.join(' ')));
-  }
+  main(process.argv.slice(2)).then(code => { process.exitCode = code; });
 }
 
-module.exports = { patternMatch, callLMStudio };
+module.exports = { patternMatch, callLMStudio, parseArgs, loadRules, main };

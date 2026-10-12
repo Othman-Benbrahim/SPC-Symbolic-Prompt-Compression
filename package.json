@@ -1,0 +1,40 @@
+{
+  "name": "spc-rosetta",
+  "version": "0.4.0",
+  "description": "SPC — garde-fou d'intention pour agents (hook Claude Code) fondé sur un DSL symbolique vérifiable et une Pierre de Rosette locale",
+  "license": "GPL-3.0-only",
+  "author": "Othman Ben Brahim (https://github.com/Othman-Benbrahim)",
+  "main": "core.js",
+  "bin": {
+    "rosetta": "rosetta.js",
+    "spc-guard": "guard.js"
+  },
+  "files": [
+    "core.js",
+    "rosetta.js",
+    "rosetta.json",
+    "rosetta.html",
+    "SPC_SKILL.md",
+    "README.md",
+    "LICENSE",
+    "guard.js",
+    "guard.policy.json",
+    "hooks/spc-guard-hook.js"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check && node validate.js",
+    "validate": "node validate.js",
+    "test": "node --test test/core.test.js test/residual.test.js test/guard.test.js test/data.test.js test/cli.test.js test/editor.test.js",
+    "bench": "node bench.js",
+    "guard:bench": "node guard.js --bench",
+    "guard:install": "node guard.js --install",
+    "test:e2e": "node test/e2e/editor.e2e.js"
+  },
+  "devDependencies": {
+    "gpt-tokenizer": "^3.0.1"
+  }
+}

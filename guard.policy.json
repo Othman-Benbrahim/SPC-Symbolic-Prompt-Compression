@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "description": "Politique par défaut du garde-fou SPC. Copier dans <projet>/.claude/spc-guard.json pour la remplacer. Actions des règles : note (contexte pour l'agent), confirm (contexte + avertissement + confirmation exigée sur les commandes concernées), block (la demande n'atteint pas l'agent). Les classes de commandes « always » s'appliquent sans tenir compte de la demande : c'est le niveau qui protège, la lecture de la prose ne fait que durcir et prévenir.",
+  "rules": [
+    {
+      "id": "deploy-prod",
+      "message": "Déploiement en production demandé",
+      "action": "confirm",
+      "commands": [
+        "deploy"
+      ],
+      "any": [
+        {
+          "op": "DEPLOY",
+          "params": {
+            "env": "prod"
+          }
+        },
+        {
+          "op": "DEPLOY",
+          "words": [
+            "production",
+            "prod",
+            "prd",
+            "live",
+            "main",
+            "master"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deploy-on-failure",
+      "message": "Déploiement déclenché quand la vérification échoue",
+      "action": "confirm",
+      "commands": [
+        "deploy"
+      ],
+      "any": [
+        {
+          "op": "DEPLOY",
+          "on_failure": true
+        }
+      ]
+    },
+    {
+      "id": "deploy-unvalidated",
+      "message": "Déploiement demandé sans étape de validation préalable",
+      "action": "note",
+      "any": [
+        {
+          "op": "DEPLOY",
+          "requires_before": "VALIDATE"
+        }
+      ]
+    },
+    {
+      "id": "destructive",
+      "message": "Suppression de fichiers, de données ou d'historique demandée",
+      "action": "confirm",
+      "commands": [
+        "destructive",
+        "data-write"
+      ],
+      "any": [
+        {
+          "op": "FILTER",
+          "params": {
+            "mode": "delete"
+          },
+          "words": [
+            "fichier",
+            "fichiers",
+            "dossier",
+            "dossiers",
+            "repertoire",
+            "branche",
+            "branches",
+            "base",
+            "bdd",
+            "table",
+            "tables",
+            "donnees",
+            "historique",
+            "bucket",
+            "volume",
+            "conteneur",
+            "file",
+            "files",
+            "folder",
+            "folders",
+            "directory",
+            "branch",
+            "database",
+            "db",
+            "data",
+            "history",
+            "records",
+            "rows",
+            "users",
+            "utilisateurs",
+            "container",
+            "logs",
+            "backup",
+            "backups",
+            "sauvegarde",
+            "sauvegardes",
+            "repo",
+            "depot",
+            "release",
+            "tag",
+            "tags",
+            "migration",
+            "migrations",
+            "cache",
+            "build",
+            "dist",
+            "node_modules"
+          ]
+        },
+        {
+          "words": [
+            "force push",
+            "push --force",
+            "push -f",
+            "reset --hard",
+            "reset hard",
+            "drop table",
+            "drop database",
+            "truncate",
+            "rm -rf",
+            "rm -fr",
+            "ecrase l'historique",
+            "reecris l'historique",
+            "rewrite history",
+            "rewrite the history",
+            "wipe",
+            "purge"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auth-change",
+      "message": "Modification de l'authentification, des droits ou des secrets",
+      "action": "confirm",
+      "commands": [
+        "auth-files"
+      ],
+      "any": [
+        {
+          "op": [
+            "ADD",
+            "CREATE",
+            "TRANSDUIT",
+            "CLONE",
+            "FILTER",
+            "DEBUG"
+          ],
+          "words": [
+            "auth",
+            "authentification",
+            "authentication",
+            "authorization",
+            "autorisation",
+            "login",
+            "connexion",
+            "password",
+            "passwords",
+            "mot de passe",
+            "jwt",
+            "token",
+            "tokens",
+            "oauth",
+            "session",
+            "sessions",
+            "permission",
+            "permissions",
+            "role",
+            "roles",
+            "droits",
+            "secret",
+            "secrets",
+            "credentials",
+            "api key",
+            "cle d'api",
+            "cles d'api"
+          ]
+        }
+      ]
+    }
+  ],
+  "incomplete": "note",
+  "commands": {
+    "destructive": {
+      "always": true,
+      "action": "ask",
+      "patterns": [
+        "\\brm\\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|-r\\s+-f|-f\\s+-r|--recursive\\s+--force|--force\\s+--recursive)\\b",
+        "\\bgit\\s+reset\\s+--hard\\b",
+        "\\bgit\\s+push\\b[^;&|]*\\s(--force|-f|--force-with-lease)\\b",
+        "\\bgit\\s+push\\b[^;&|]*\\s\\+\\S",
+        "\\bgit\\s+clean\\s+-[a-zA-Z]*f",
+        "\\bgit\\s+branch\\s+-D\\b",
+        "\\bgit\\s+(filter-branch|filter-repo)\\b",
+        "\\b(drop|truncate)\\s+(table|database|schema)\\b",
+        "\\bdelete\\s+from\\s+\\w+\\s*(;|$)",
+        "\\b(mkfs|dd\\s+if=|shred)\\b",
+        "\\bkubectl\\s+delete\\b",
+        "\\bdocker\\s+(system|volume|image)\\s+prune\\b",
+        "\\bterraform\\s+destroy\\b",
+        "\\bgit\\s+push\\b[^;&|]*\\s(--delete|-d)\\b",
+        "\\bgit\\s+push\\b[^;&|]*\\s:\\S"
+      ]
+    },
+    "data-write": {
+      "always": false,
+      "action": "ask",
+      "patterns": [
+        "\\bdelete\\s+from\\b",
+        "\\bupdate\\s+\\w+\\s+set\\b",
+        "\\balter\\s+table\\b",
+        "\\b(redis-cli|redis)\\b.*\\b(del|flushall|flushdb)\\b",
+        "\\bmongo(sh)?\\b.*\\b(deleteMany|drop)\\b"
+      ]
+    },
+    "deploy": {
+      "always": false,
+      "action": "ask",
+      "patterns": [
+        "\\bgit\\s+push\\b",
+        "\\b(npm|yarn|pnpm)\\s+publish\\b",
+        "\\bvercel\\b",
+        "\\bnetlify\\s+deploy\\b",
+        "\\bfly(ctl)?\\s+deploy\\b",
+        "\\bfirebase\\s+deploy\\b",
+        "\\bkubectl\\s+(apply|rollout|set\\s+image)\\b",
+        "\\bhelm\\s+(upgrade|install)\\b",
+        "\\bterraform\\s+apply\\b",
+        "\\bdocker\\s+push\\b",
+        "\\bgh\\s+release\\s+create\\b",
+        "\\b(heroku|railway|render)\\b.*\\b(deploy|up|release)\\b",
+        "\\b(scp|rsync)\\b.*\\b(prod|production)\\b",
+        "\\bdeploy(\\.sh)?\\b"
+      ],
+      "prod_markers": "(--prod\\b|\\bprod(uction)?\\b|\\blive\\b|\\b(main|master)\\b)"
+    },
+    "auth-files": {
+      "always": true,
+      "action": "ask",
+      "paths": "(^|/)[^/]*(auth|login|passw|oauth|jwt|permission|acl|csrf|credential)[^/]*$"
+    },
+    "secrets": {
+      "always": true,
+      "action": "ask",
+      "paths": "((^|/)\\.env(\\.[^/]*)?$|secret|credential|\\.pem$|\\.key$|id_rsa|id_ed25519|\\.npmrc$|\\.pypirc$)"
+    }
+  }
+}

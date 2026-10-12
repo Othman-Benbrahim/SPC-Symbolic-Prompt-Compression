@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<!--
+  GABARIT de l'éditeur. NE PAS ouvrir directement : `node build.js` produit
+  rosetta.html (fichier unique autonome) en y inlinant core.js et rosetta.json.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="@@CSP@@">
+<title>Pierre de Rosette SPC</title>
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg2: #16181c;
+  --bg3: #1e2128;
+  --border: #2a2d35;
+  --border2: #363a45;
+  --text: #e8e6df;
+  --muted: #8a919e;
+  --accent: #c8f05a;
+  --accent2: #5af0c8;
+  --accent3: #f0a05a;
+  --danger: #f05a5a;
+  /* Polices système uniquement : zéro requête réseau (JetBrains Mono / Syne utilisées si installées) */
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --display: 'Syne', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+
+header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+  background: var(--bg2); position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: var(--display); font-size: 15px; font-weight: 800; letter-spacing: .04em; color: var(--accent); }
+.logo span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.layout { display: grid; grid-template-columns: 180px 1fr; min-height: calc(100vh - 49px); }
+@media (max-width: 700px) { .layout { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--border); } }
+
+nav { border-right: 1px solid var(--border); padding: 16px 0; background: var(--bg2); }
+.nav-section { font-size: 10px; color: var(--muted); padding: 4px 16px 8px; letter-spacing: .12em; text-transform: uppercase; }
+.nav-item {
+  display: block; width: 100%; text-align: left; background: none; border: 0; font: inherit;
+  padding: 8px 16px; cursor: pointer; color: var(--muted);
+  transition: color .15s, background .15s; border-left: 2px solid transparent;
+  font-size: 12px;
+}
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg3); }
+.nav-count { float: right; font-size: 10px; background: var(--bg3); padding: 1px 6px; border-radius: 10px; color: var(--muted); }
+.nav-item.active .nav-count { background: rgba(200,240,90,.15); color: var(--accent); }
+
+main { padding: 24px; overflow-y: auto; min-width: 0; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.section-title { font-family: var(--display); font-size: 18px; font-weight: 800; color: var(--text); }
+.section-title small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-left: 10px; }
+
+.btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.btn[disabled] { opacity: .4; cursor: default; }
+.btn-primary { background: var(--accent); color: #0e0f11; }
+.btn-primary:hover { background: #d4f56a; }
+.btn-ghost { border: 1px solid var(--border2); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-danger { border: 1px solid var(--border2); color: var(--muted); }
+.btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-export { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-export:hover { background: rgba(200,240,90,.1); }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+.card-header { width: 100%; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; border-bottom: 1px solid var(--border); background: none; color: inherit; font: inherit; cursor: pointer; user-select: none; text-align: left; }
+.card-header:hover { background: var(--bg3); }
+.card-id { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--accent2); }
+.card-default { font-family: var(--mono); font-size: 11px; color: var(--accent); background: rgba(90,240,200,.08); padding: 3px 8px; border-radius: 4px; }
+.card-meta { font-size: 10px; color: var(--muted); }
+.card-body { padding: 14px 16px; display: none; }
+.card-body.open { display: block; }
+.card-summary { color: var(--muted); font-size: 12px; margin-bottom: 10px; line-height: 1.6; }
+
+.field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; margin-top: 14px; }
+.field-label:first-child { margin-top: 0; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tag {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
+  padding: 3px 8px; font-size: 11px; color: var(--text); display: flex; align-items: center; gap: 5px;
+}
+.tag-del { all: unset; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
+.tag-del:hover, .tag-del:focus-visible { color: var(--danger); }
+.tag-add { background: transparent; border: 1px dashed var(--border2); color: var(--muted); cursor: pointer; font: inherit; font-size: 11px; }
+.tag-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.param-group { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+.param-name { font-size: 11px; font-weight: 600; color: var(--accent3); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.param-value { margin-bottom: 6px; }
+.param-value-name { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+.shortcut-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+@media (max-width: 700px) { .shortcut-row { grid-template-columns: 1fr; } .shortcut-arrow { display: none; } }
+.shortcut-phrase { font-size: 12px; color: var(--text); overflow-wrap: anywhere; }
+.shortcut-arrow { color: var(--muted); font-size: 16px; }
+.shortcut-dsl { font-family: var(--mono); font-size: 12px; color: var(--accent); overflow-wrap: anywhere; }
+.shortcut-dsl.invalid { color: var(--accent3); }
+.shortcut-actions { display: flex; gap: 6px; }
+
+.add-form { background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; margin-top: 12px; margin-bottom: 12px; display: none; }
+.add-form.open { display: block; }
+.add-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 700px) { .add-form-row { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+input, textarea, select {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
+  padding: 7px 10px; color: var(--text); font-family: var(--mono); font-size: 12px;
+  outline: none; transition: border-color .15s; min-width: 0;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 60px; }
+
+.tester-area { max-width: 680px; }
+.tester-input { display: flex; gap: 8px; margin-bottom: 16px; }
+.tester-input input { flex: 1; font-size: 13px; padding: 10px 14px; }
+.result-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.result-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+.result-prose { color: var(--muted); font-size: 13px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.result-dsl { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 10px; overflow-wrap: anywhere; }
+.result-meta { display: flex; gap: 16px; }
+.result-metric { text-align: center; }
+.result-metric-val { font-size: 18px; font-weight: 600; color: var(--accent2); }
+.result-metric-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.result-warn { color: var(--accent3); font-size: 12px; margin: 8px 0; line-height: 1.6; }
+.result-error { color: var(--danger); font-size: 13px; padding: 12px; background: rgba(240,90,90,.08); border-radius: 6px; margin-top: 10px; line-height: 1.6; overflow-wrap: anywhere; }
+.no-match { color: var(--muted); font-style: italic; }
+
+.mod-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.mod-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.mod-name { font-size: 12px; font-weight: 600; color: var(--accent3); margin-bottom: 4px; }
+.mod-effect { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+.banner { display: none; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--accent3); border-radius: 8px; background: rgba(240,160,90,.08); font-size: 12px; line-height: 1.6; }
+.banner.show { display: block; }
+.banner .actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+.status-bar { position: fixed; bottom: 16px; right: 24px; max-width: calc(100vw - 48px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 14px; font-size: 12px; color: var(--accent); transform: translateY(80px); transition: transform .25s; z-index: 200; }
+.status-bar.show { transform: translateY(0); }
+.status-bar.error { color: var(--danger); border-color: var(--danger); }
+
+.chevron { transition: transform .2s; display: inline-block; color: var(--muted); font-size: 10px; }
+.chevron.open { transform: rotate(90deg); }
+
+.spinner { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Utilitaires : remplacent les anciens attributs de style inline (CSP style-src hachée) */
+.u1 { margin-top:12px; }
+.u2 { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+.u3 { width:180px; }
+.u4 { display:flex;gap:8px; }
+.u5 { margin-bottom:10px; }
+.u6 { font-size:12px;color:var(--muted); }
+.u7 { margin-bottom:16px;padding:14px 16px; }
+.u8 { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:14px; }
+.u9 { height:36px; }
+.u10 { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end; }
+.u11 { color:var(--accent); }
+.u12 { background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--muted); }
+.u13 { color:var(--accent2); }
+.u14 { max-width:100%; }
+.u15 { font-size:13px;padding:10px 14px; }
+.u16 { margin-top:16px; }
+.u17 { display:flex;flex-wrap:wrap;gap:6px;margin-top:6px; }
+.u18 { display:none; }
+.u19 { color:var(--muted);padding:20px 0; }
+.u20 { display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border); }
+.u21 { color:var(--text); }
+.u22 { font-size:11px;color:var(--muted);margin-top:10px;text-align:right; }
+.u23 { color:var(--muted);font-weight:400;font-size:10px; }
+.u24 { color:var(--muted);font-size:11px;margin-top:8px; }
+.u25 { display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+.u26 { margin-top:14px; }
+.u27 { color:var(--accent3);font-size:10px; }
+.u28 { margin-top:14px;display:flex;gap:8px; }
+.u29 { font-size:10px;color:var(--accent2);margin-left:8px; }
+.u30 { font-size:18px; }
+.u31 { font-size:12px;color:var(--muted);margin:8px 0 12px; }
+.u32 { margin-top:14px;display:flex;gap:8px;flex-wrap:wrap; }
+.u33 { color:var(--muted);font-size:13px;padding:14px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Pierre de Rosette <span id="app-version">SPC</span></div>
+  <div class="header-actions">
+    <button class="btn btn-danger btn-sm" data-action="reset" title="Revenir à la base embarquée">⟲ Réinitialiser</button>
+    <button class="btn btn-ghost btn-sm" data-action="import">↑ Importer</button>
+    <button class="btn btn-export btn-sm" data-action="export">↓ Exporter JSON</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav aria-label="Sections">
+    <div class="nav-section">Base de règles</div>
+    <button class="nav-item active" data-action="section" data-id="shortcuts" id="nav-shortcuts">
+      Raccourcis <span class="nav-count" id="cnt-shortcuts">0</span>
+    </button>
+    <button class="nav-item" data-action="section" data-id="operators" id="nav-operators">
+      Opérateurs <span class="nav-count" id="cnt-operators">0</span>
+    </button>
+    <button class="nav-item" data-action="section" data-id="modifiers" id="nav-modifiers">
+      Modificateurs <span class="nav-count" id="cnt-modifiers">0</span>
+    </button>
+    <button class="nav-item" data-action="section" data-id="outputs" id="nav-outputs">
+      Types sortie <span class="nav-count" id="cnt-outputs">0</span>
+    </button>
+    <div class="u1 nav-section">Outil</div>
+    <button class="nav-item" data-action="section" data-id="lmstudio" id="nav-lmstudio">IA locale <span class="nav-count" id="cnt-models">0</span></button>
+    <button class="nav-item" data-action="section" data-id="tester" id="nav-tester">Tester</button>
+  </nav>
+
+  <main>
+    <div class="banner" id="version-banner" role="status"></div>
+
+    <div class="section active" id="section-shortcuts">
+      <div class="section-header">
+        <div class="section-title">Raccourcis <small>phrase → DSL direct (la plus longue correspondance gagne)</small></div>
+        <div class="u2">
+          <input class="u3" type="search" id="shortcut-filter" placeholder="Rechercher…" aria-label="Rechercher un raccourci">
+          <button class="btn btn-primary btn-sm" data-action="toggle-add-shortcut">+ Ajouter</button>
+        </div>
+      </div>
+      <div id="add-shortcut-form" class="add-form">
+        <div class="add-form-row">
+          <div class="form-group">
+            <label class="form-label" for="sc-phrase">Phrase (en prose)</label>
+            <input id="sc-phrase" type="text" placeholder="analyse ce texte en profondeur">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sc-dsl">DSL généré</label>
+            <input id="sc-dsl" type="text" placeholder="ANALYZE[◈, ▲]">
+          </div>
+        </div>
+        <div class="u4">
+          <button class="btn btn-primary btn-sm" data-action="add-shortcut">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" data-action="toggle-add-shortcut">Annuler</button>
+        </div>
+      </div>
+      <div id="shortcuts-list"></div>
+    </div>
+
+    <div class="section" id="section-operators">
+      <div class="section-header">
+        <div class="section-title">Opérateurs <small>déclencheurs + paramètres · ordre sans effet (priorité explicite)</small></div>
+      </div>
+      <div id="operators-list"></div>
+    </div>
+
+    <div class="section" id="section-modifiers">
+      <div class="section-header">
+        <div class="section-title">Modificateurs <small>mots qui affectent la forme du DSL</small></div>
+        <button class="btn btn-primary btn-sm" data-action="toggle-add-modifier">+ Ajouter</button>
+      </div>
+      <div id="add-modifier-form" class="add-form">
+        <div class="add-form-row">
+          <div class="form-group">
+            <label class="form-label" for="mod-name">Nom du modificateur</label>
+            <input id="mod-name" type="text" placeholder="mon_modificateur">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mod-triggers">Déclencheurs (séparés par ,)</label>
+            <input id="mod-triggers" type="text" placeholder="mot, autre mot">
+          </div>
+        </div>
+        <p class="u5 card-meta">Les 7 noms réservés (▲_max, pipe, conditional, else, store, session_close, lazy_load) sont les seuls interprétés par le transpileur ; un modificateur personnalisé sert de documentation pour l'IA locale.</p>
+        <div class="u4">
+          <button class="btn btn-primary btn-sm" data-action="add-modifier">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" data-action="toggle-add-modifier">Annuler</button>
+        </div>
+      </div>
+      <div class="mod-section" id="modifiers-list"></div>
+    </div>
+
+    <div class="section" id="section-outputs">
+      <div class="section-header">
+        <div class="section-title">Types de sortie <small>mots → format après →</small></div>
+      </div>
+      <div class="mod-section" id="outputs-list"></div>
+    </div>
+
+    <div class="section" id="section-tester">
+      <div class="section-header">
+        <div class="section-title">Tester <small>prose → DSL sans IA (même moteur que le CLI)</small></div>
+      </div>
+      <div class="tester-area">
+        <div class="tester-input">
+          <input id="test-input" type="text" aria-label="Instruction à transpiler" placeholder="analyse ce code en profondeur puis compresse le résultat">
+          <button class="btn btn-primary" data-action="run-test">Transpiler</button>
+        </div>
+        <div id="test-result" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-lmstudio">
+      <div class="section-header">
+        <div class="section-title">IA locale <small>via LM Studio (API OpenAI-compatible, localhost)</small></div>
+        <div class="u6" id="lm-status" aria-live="polite">Non connecté</div>
+      </div>
+
+      <div class="u7 card">
+        <div class="u8">
+          <div class="form-group">
+            <label class="form-label" for="lm-url">URL LM Studio</label>
+            <input id="lm-url" type="text" value="http://localhost:1234">
+          </div>
+          <button class="u9 btn btn-ghost btn-sm" data-action="test-connection">Tester connexion</button>
+        </div>
+        <div class="u10">
+          <div class="form-group">
+            <label class="form-label" for="lm-model-select">IA locale</label>
+            <select class="u11" id="lm-model-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lm-model">Identifiant modèle LM Studio</label>
+            <input class="u11" id="lm-model" type="text">
+          </div>
+        </div>
+      </div>
+
+      <div class="u12">
+        <strong class="u13">Ordre de résolution :</strong> 1. raccourci de la BDD (IA non consultée) · 2. IA locale · 3. repli sur les règles si l'IA échoue.<br>
+        <strong class="u13">Contrôle :</strong> le DSL renvoyé par le modèle est validé contre le schéma de la BDD ; les écarts sont signalés.<br>
+        <strong class="u13">Tokens :</strong> estimation locale identique dans tous les modes (les chiffres annoncés par le modèle sont ignorés).<br>
+        <strong class="u13">Prérequis :</strong> LM Studio démarré · serveur local activé · modèle chargé. En <code>file://</code>, si CORS bloque : <code>python -m http.server 8080</code>.
+      </div>
+
+      <div class="u14 tester-area">
+        <div class="tester-input">
+          <input class="u15" id="lm-input" type="text" aria-label="Instruction pour l'IA locale" placeholder="Décris en langage naturel ce que tu veux faire…">
+          <button class="btn btn-primary" data-action="run-ai">Traduire via IA locale</button>
+        </div>
+        <div id="lm-result" aria-live="polite"></div>
+        <div class="u16">
+          <p class="form-label">Exemples rapides</p>
+          <div class="u17">
+            <button class="btn btn-ghost btn-sm" data-action="example">analyze the codebase for security issues</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">refactor this into functional components</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">write unit tests and validate coverage</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">fix the authentication bug then deploy to staging</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">copie ce composant et adapte-le pour mobile</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">active la résonance symbolique sur tout le texte</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="status-bar" id="status-bar" role="status">Sauvegardé</div>
+<input class="u18" type="file" id="import-input" accept=".json,application/json" aria-hidden="true">
+
+<script>
+/* ===== core.js (inliné par build.js — ne pas éditer ici) ===== */
+@@CORE@@
+</script>
+<script>
+/* ===== rosetta.json (inliné par build.js — ne pas éditer ici) ===== */
+const DEFAULT = @@RULES@@;
+</script>
+<script>
+'use strict';
+/* ===== Éditeur =====
+ * Sécurité : aucun gestionnaire inline. Toute valeur dynamique passe par esc()
+ * et n'atteint le JS que via data-* + dataset (décodé par le navigateur), avec
+ * un seul écouteur délégué. La CSP interdit en outre tout script inline non haché.
+ */
+const STORAGE_KEY = 'rosetta-spc';
+const PAGE_SIZE = 20;
+const LOCAL_MODELS = {
+  'google/gemma-3-4b': 'Gemma 3 4B',
+  'mistral-nemo-instruct-2407': 'Mistral Nemo Instruct 2407',
+  'Qwen2.5-Coder-7B-Instruct-Q4_K_M': 'Qwen2.5-Coder 7B Instruct Q4_K_M'
+};
+
+const $ = id => document.getElementById(id);
+const clone = o => JSON.parse(JSON.stringify(o));
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+let DB = clone(DEFAULT);
+let shortcutPage = 0;
+let shortcutFilter = '';
+
+// ─── PERSISTANCE ────────────────────────────────────────────────────────────
+function readStore() {
+  try { return localStorage.getItem(STORAGE_KEY); }
+  catch (e) { status('Stockage local indisponible : les modifications ne seront pas conservées.', true); return null; }
+}
+
+function loadDB() {
+  const raw = readStore();
+  if (!raw) return;
+  let stored;
+  try { stored = JSON.parse(raw); } catch (e) { status('Base locale illisible ignorée (base embarquée chargée).', true); return; }
+  // format v0.1 : la BDD brute ; format v0.2+ : { version, db, dismissed }
+  const env = stored && stored.operators ? { version: stored.version, db: stored } : stored;
+  if (!env || !env.db || SPC.checkDBStructure(env.db).length) {
+    status('Base locale corrompue ignorée (base embarquée chargée).', true);
+    return;
+  }
+  DB = env.db;
+  if (DB.version !== DEFAULT.version && env.dismissed !== DEFAULT.version) showVersionBanner(DB.version);
+}
+
+function saveDB(extra) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.assign({ version: DB.version, db: DB }, extra || {})));
+    status('Sauvegardé');
+    return true;
+  } catch (e) {
+    status('Sauvegarde impossible (' + (e.name === 'QuotaExceededError' ? 'quota dépassé' : 'stockage bloqué') + ') — exporte ta base.', true);
+    return false;
+  }
+}
+
+function showVersionBanner(localVersion) {
+  const b = $('version-banner');
+  b.innerHTML = `Ta base locale est en <strong>v${esc(localVersion || '?')}</strong>, la base embarquée en <strong>v${esc(DEFAULT.version)}</strong> (corrections de schéma et de déclencheurs).
+    <div class="actions">
+      <button class="btn btn-primary btn-sm" data-action="banner-load">Charger la v${esc(DEFAULT.version)} (exporte d'abord ta base si besoin)</button>
+      <button class="btn btn-ghost btn-sm" data-action="banner-keep">Garder ma base</button>
+    </div>`;
+  b.classList.add('show');
+}
+
+let statusTimer = null;
+function status(msg, isError) {
+  const bar = $('status-bar');
+  bar.textContent = msg;
+  bar.classList.toggle('error', !!isError);
+  bar.classList.add('show');
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => bar.classList.remove('show'), isError ? 6000 : 1800);
+}
+
+// ─── RENDU ──────────────────────────────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  $('section-' + id).classList.add('active');
+  $('nav-' + id).classList.add('active');
+  $('nav-' + id).setAttribute('aria-current', 'page');
+  render();
+}
+
+function updateCounts() {
+  $('cnt-shortcuts').textContent = Object.keys(DB.shortcuts).length;
+  $('cnt-operators').textContent = DB.operators.length;
+  $('cnt-modifiers').textContent = Object.keys(DB.modifiers).length;
+  $('cnt-outputs').textContent = Object.keys(DB.output_types).length;
+  $('cnt-models').textContent = Object.keys(LOCAL_MODELS).length + ' IA';
+  $('app-version').textContent = 'SPC · règles v' + DB.version;
+}
+
+function renderShortcuts() {
+  const el = $('shortcuts-list');
+  let entries = Object.entries(DB.shortcuts);
+  if (shortcutFilter) {
+    const f = SPC.normalize(shortcutFilter);
+    entries = entries.filter(([k, v]) => SPC.normalize(k).includes(f) || SPC.normalize(v).includes(f));
+  }
+  if (!entries.length) { el.innerHTML = '<p class="u19">Aucun raccourci trouvé.</p>'; return; }
+
+  const totalPages = Math.ceil(entries.length / PAGE_SIZE);
+  if (shortcutPage >= totalPages) shortcutPage = totalPages - 1;
+  const page = entries.slice(shortcutPage * PAGE_SIZE, (shortcutPage + 1) * PAGE_SIZE);
+
+  const rows = page.map(([phrase, dsl]) => {
+    const v = SPC.validateDSL(dsl, DB);
+    return `
+    <div class="shortcut-row">
+      <span class="shortcut-phrase">${esc(phrase)}</span>
+      <span class="shortcut-arrow" aria-hidden="true">→</span>
+      <span class="shortcut-dsl${v.ok ? '' : ' invalid'}" ${v.ok ? '' : `title="${esc(v.errors.join(' ; '))}"`}>${v.ok ? '' : '⚠ '}${esc(dsl)}</span>
+      <div class="shortcut-actions">
+        <button class="btn btn-ghost btn-sm" data-action="edit-shortcut" data-phrase="${esc(phrase)}" aria-label="Modifier ${esc(phrase)}">✎</button>
+        <button class="btn btn-danger btn-sm" data-action="delete-shortcut" data-phrase="${esc(phrase)}" aria-label="Supprimer ${esc(phrase)}">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const pagination = totalPages > 1 ? `
+    <div class="u20">
+      <button class="btn btn-ghost btn-sm" data-action="page" data-dir="-1" ${shortcutPage === 0 ? 'disabled' : ''}>← Précédent</button>
+      <span class="u6">
+        Page <strong class="u21">${shortcutPage + 1}</strong> / ${totalPages}
+        &nbsp;·&nbsp; ${entries.length} raccourcis${shortcutFilter ? ' trouvés' : ''}
+      </span>
+      <button class="btn btn-ghost btn-sm" data-action="page" data-dir="1" ${shortcutPage === totalPages - 1 ? 'disabled' : ''}>Suivant →</button>
+    </div>` : `<div class="u22">${entries.length} raccourcis</div>`;
+
+  el.innerHTML = rows + pagination;
+}
+
+function tagList(triggers, delAttrs, addAttrs) {
+  return `<div class="tags">${triggers.map((t, ti) => `
+    <span class="tag">${esc(t)}<button class="tag-del" ${delAttrs} data-ti="${ti}" aria-label="Retirer ${esc(t)}">×</button></span>`).join('')}
+    <button class="tag tag-add" ${addAttrs}>+ mot</button>
+  </div>`;
+}
+
+function renderOperators() {
+  const el = $('operators-list');
+  const open = new Set([...document.querySelectorAll('.card-body.open')].map(b => b.id));
+  el.innerHTML = DB.operators.map((op, oi) => {
+    const params = op.params || {};
+    const paramsHTML = Object.keys(params).length ? Object.entries(params).map(([pname, pvals]) => `
+      <div class="param-group">
+        <div class="param-name">${esc(pname)} <span class="u23">paramètre</span></div>
+        ${Object.entries(pvals).map(([val, triggers]) => `
+          <div class="param-value">
+            <div class="param-value-name">${esc(val)}</div>
+            ${tagList(triggers,
+              `data-action="remove-param-trigger" data-oi="${oi}" data-p="${esc(pname)}" data-v="${esc(val)}"`,
+              `data-action="add-param-trigger" data-oi="${oi}" data-p="${esc(pname)}" data-v="${esc(val)}"`)}
+          </div>`).join('')}
+      </div>`).join('') : '<p class="u24">Pas de paramètres contextuels pour cet opérateur.</p>';
+    const id = 'op-' + oi;
+    const isOpen = open.has(id);
+    return `<div class="card">
+      <button class="card-header" data-action="toggle-card" data-id="${id}" aria-expanded="${isOpen}" aria-controls="${id}">
+        <span class="u25">
+          <span class="card-id">${esc(op.id)}</span>
+          <span class="card-default">${esc(op.default)}</span>
+          <span class="card-meta">${esc(op.tier || '')}${op.priority != null ? ' · priorité ' + esc(op.priority) : ''}</span>
+        </span>
+        <span class="chevron${isOpen ? ' open' : ''}" id="chev-${id}" aria-hidden="true">▶</span>
+      </button>
+      <div class="card-body${isOpen ? ' open' : ''}" id="${id}">
+        ${op.summary ? `<div class="card-summary">${esc(op.summary)}${op.signature ? ` <code>${esc(op.id)}[${esc(op.signature.join(', '))}]</code>` : ''}</div>` : ''}
+        <div class="field-label">Déclencheurs</div>
+        ${tagList(op.triggers, `data-action="remove-trigger" data-oi="${oi}"`, `data-action="add-trigger" data-oi="${oi}"`)}
+        <div class="u26 field-label">Paramètres contextuels</div>
+        ${paramsHTML}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderModifiers() {
+  const effects = DB.modifier_effects || {};
+  $('modifiers-list').innerHTML = Object.entries(DB.modifiers).map(([name, triggers]) => `
+    <div class="mod-card">
+      <div class="mod-name">${esc(name)}</div>
+      <div class="mod-effect">${esc(effects[name] || 'personnalisé (non interprété par les règles)')}</div>
+      ${tagList(triggers, `data-action="remove-mod-trigger" data-name="${esc(name)}"`, `data-action="add-mod-trigger" data-name="${esc(name)}"`)}
+    </div>`).join('');
+}
+
+function renderOutputs() {
+  $('outputs-list').innerHTML = Object.entries(DB.output_types).map(([name, triggers]) => `
+    <div class="mod-card">
+      <div class="u11 mod-name">${esc(name)}</div>
+      ${tagList(triggers, `data-action="remove-out-trigger" data-name="${esc(name)}"`, `data-action="add-out-trigger" data-name="${esc(name)}"`)}
+    </div>`).join('');
+}
+
+function render() {
+  updateCounts();
+  renderShortcuts();
+  renderOperators();
+  renderModifiers();
+  renderOutputs();
+}
+
+// ─── ÉDITION ────────────────────────────────────────────────────────────────
+function confirmDSL(dsl) {
+  const v = SPC.validateDSL(dsl, DB);
+  return v.ok || confirm('DSL non conforme au schéma :\n- ' + v.errors.join('\n- ') + '\n\nEnregistrer quand même ?');
+}
+
+function addShortcut() {
+  const phrase = $('sc-phrase').value.trim();
+  const dsl = $('sc-dsl').value.trim();
+  if (!phrase || !dsl) return;
+  if (!confirmDSL(dsl)) return;
+  DB.shortcuts[phrase] = dsl;
+  $('sc-phrase').value = ''; $('sc-dsl').value = '';
+  $('add-shortcut-form').classList.remove('open');
+  saveDB(); render();
+}
+
+function editShortcut(phrase) {
+  if (!(phrase in DB.shortcuts)) return;
+  const newDsl = prompt('Nouveau DSL pour :\n"' + phrase + '"', DB.shortcuts[phrase]);
+  if (newDsl === null || !newDsl.trim()) return;
+  if (!confirmDSL(newDsl.trim())) return;
+  DB.shortcuts[phrase] = newDsl.trim();
+  saveDB(); render();
+}
+
+function deleteShortcut(phrase) {
+  if (!(phrase in DB.shortcuts) || !confirm('Supprimer ce raccourci ?\n"' + phrase + '"')) return;
+  delete DB.shortcuts[phrase];
+  saveDB(); render();
+}
+
+function addTrigger(oi) {
+  const op = DB.operators[oi];
+  const word = (prompt('Nouveau mot déclencheur pour ' + op.id + ' :') || '').trim();
+  if (!word) return;
+  const k = SPC.normalize(word);
+  const owner = DB.operators.find(o => o.triggers.some(t => SPC.normalize(t) === k));
+  if (owner === op) return status('« ' + word + ' » est déjà un déclencheur de ' + op.id, true);
+  if (owner && !confirm('« ' + word + ' » déclenche déjà ' + owner.id + '. Un déclencheur partagé rend le choix d\'opérateur ambigu (départage par priorité). Continuer ?')) return;
+  op.triggers.push(word);
+  saveDB(); render();
+}
+
+function addTo(list, label) {
+  const word = (prompt(label) || '').trim();
+  if (!word) return false;
+  if (list.some(t => SPC.normalize(t) === SPC.normalize(word))) { status('Déjà présent', true); return false; }
+  list.push(word);
+  return true;
+}
+
+function addModifier() {
+  const name = $('mod-name').value.trim();
+  const triggers = $('mod-triggers').value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!name || !triggers.length) return;
+  if (DB.modifiers[name] && !confirm('Le modificateur « ' + name + ' » existe : remplacer ses déclencheurs ?')) return;
+  DB.modifiers[name] = triggers;
+  $('mod-name').value = ''; $('mod-triggers').value = '';
+  $('add-modifier-form').classList.remove('open');
+  saveDB(); render();
+}
+
+// ─── IMPORT / EXPORT / RESET ────────────────────────────────────────────────
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(DB, null, 2) + '\n'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rosetta.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    let candidate;
+    try { candidate = JSON.parse(ev.target.result); }
+    catch (err) { return alert('Import refusé — JSON invalide :\n' + err.message); }
+    const errs = SPC.checkDBStructure(candidate);
+    if (errs.length) return alert('Import refusé — structure invalide (la base actuelle est conservée) :\n- ' + errs.slice(0, 12).join('\n- '));
+    DB = candidate;
+    saveDB(); render();
+    const lint = SPC.lintDB(DB);
+    status(lint.errors.length ? 'Importé · ' + lint.errors.length + ' problème(s) de schéma (voir ⚠)' : 'Importé', !!lint.errors.length);
+  };
+  reader.readAsText(file);
+}
+
+function resetDB() {
+  if (!confirm('Remplacer ta base locale par la base embarquée v' + DEFAULT.version + ' ?\nPense à exporter la tienne avant si tu veux la garder.')) return;
+  DB = clone(DEFAULT);
+  $('version-banner').classList.remove('show');
+  saveDB(); render();
+  status('Base réinitialisée (v' + DB.version + ')');
+}
+
+// ─── TESTER ─────────────────────────────────────────────────────────────────
+function metricsHTML(prose, dsl) {
+  const tP = SPC.estimateTokens(prose), tD = SPC.estimateTokens(dsl);
+  const ratio = Math.round(tP / Math.max(tD, 1) * 10) / 10;
+  return `<div class="result-meta">
+      <div class="result-metric"><div class="result-metric-val">~${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
+      <div class="result-metric"><div class="result-metric-val">~${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
+      <div class="result-metric"><div class="u11 result-metric-val">×${ratio}</div><div class="result-metric-lbl">ratio (estimé)</div></div>
+    </div>`;
+}
+
+function issuesHTML(warnings, validation, complete) {
+  const lines = complete === false ? ['INSTRUCTION INCOMPLÈTE : une partie de la prose n\'est pas dans le DSL'] : [];
+  lines.push(...(warnings || []));
+  if (validation && !validation.ok) lines.push(...validation.errors.map(e => 'schéma : ' + e));
+  return lines.length ? `<div class="result-warn">${lines.map(l => '⚠ ' + esc(l)).join('<br>')}</div>` : '';
+}
+
+function runTest() {
+  const input = $('test-input').value.trim();
+  if (!input) return;
+  const res = SPC.transpile(input, DB);
+  const el = $('test-result');
+  if (!res.dsl) {
+    el.innerHTML = `<div class="result-box"><p class="no-match">Aucun opérateur reconnu. Essaie un verbe d'action (analyse, scan, compresse…) ou ajoute un raccourci.</p>${issuesHTML(res.warnings)}</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="result-box">
+    <div class="result-label">Prose</div>
+    <div class="result-prose">${esc(input)} ${res.source === 'shortcut' ? '<span class="u27">[raccourci]</span>' : ''}</div>
+    <div class="result-label">DSL</div>
+    <div class="result-dsl">${esc(res.dsl)}</div>
+    ${issuesHTML(res.warnings, SPC.validateDSL(res.dsl, DB), res.complete)}
+    ${metricsHTML(input, res.dsl)}
+    <div class="u28"><button class="btn btn-primary btn-sm" data-action="copy" data-dsl="${esc(res.dsl)}">Copier DSL</button></div>
+  </div>`;
+}
+
+// ─── IA LOCALE ──────────────────────────────────────────────────────────────
+function currentModelLabel() {
+  const model = $('lm-model').value.trim();
+  return LOCAL_MODELS[model] || model || 'IA locale';
+}
+
+function initModelSelect() {
+  const sel = $('lm-model-select');
+  sel.innerHTML = Object.entries(LOCAL_MODELS).map(([id, label]) => `<option value="${esc(id)}">${esc(label)}</option>`).join('')
+    + '<option value="custom">Modèle personnalisé</option>';
+  $('lm-model').value = Object.keys(LOCAL_MODELS)[0];
+  sel.addEventListener('change', () => { if (sel.value !== 'custom') $('lm-model').value = sel.value; });
+  $('lm-model').addEventListener('change', () => {
+    const v = $('lm-model').value.trim();
+    sel.value = v in LOCAL_MODELS ? v : 'custom';
+  });
+}
+
+function lmStatus(text, color) { const s = $('lm-status'); s.textContent = text; s.style.color = color; }
+
+async function testConnection() {
+  const url = $('lm-url').value.trim().replace(/\/+$/, '');
+  lmStatus('Test…', 'var(--muted)');
+  try {
+    const r = await fetch(url + '/v1/models', { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    const models = (d.data || []).map(m => m.id).join(', ') || '—';
+    lmStatus('✓ Connecté · ' + models, 'var(--accent)');
+  } catch (e) {
+    lmStatus('✗ ' + (/fetch|Failed|NetworkError|violates/i.test(e.message) ? 'LM Studio non démarré, CORS ou CSP' : e.message), 'var(--danger)');
+  }
+}
+
+function aiResultHTML(prose, dsl, label, explication, validation, warnings, canAdd) {
+  return `<div class="u1 result-box">
+      <div class="result-label">Prose</div>
+      <div class="result-prose">${esc(prose)}</div>
+      <div class="result-label">DSL <span class="u29">${esc(label)}</span></div>
+      <div class="u30 result-dsl">${esc(dsl)}</div>
+      ${explication ? `<div class="u31">${esc(explication)}</div>` : ''}
+      ${issuesHTML(warnings, validation)}
+      ${metricsHTML(prose, dsl)}
+      <div class="u32">
+        <button class="btn btn-primary btn-sm" data-action="copy" data-dsl="${esc(dsl)}">Copier DSL</button>
+        ${canAdd ? `<button class="btn btn-ghost btn-sm" data-action="add-to-shortcuts" data-phrase="${esc(prose)}" data-dsl="${esc(dsl)}">+ Ajouter aux raccourcis</button>` : ''}
+      </div>
+    </div>`;
+}
+
+async function runAI() {
+  const prose = $('lm-input').value.trim();
+  if (!prose) return;
+  const url = $('lm-url').value.trim().replace(/\/+$/, '');
+  const model = $('lm-model').value.trim();
+  const el = $('lm-result');
+
+  // 1. Raccourci de la BDD : déterministe, zéro appel IA
+  const rule = SPC.transpile(prose, DB);
+  if (rule.source === 'shortcut') {
+    el.innerHTML = aiResultHTML(prose, rule.dsl, 'raccourci BDD · IA non consultée', 'Correspondance dans la base de règles.', SPC.validateDSL(rule.dsl, DB), rule.warnings, false);
+    lmStatus('✓ Raccourci BDD — IA non consultée', 'var(--accent2)');
+    return;
+  }
+
+  // 2. IA locale
+  el.innerHTML = '<div class="u33"><span class="spinner" aria-hidden="true"></span>IA locale traduit…</div>';
+  try {
+    const res = await fetch(url + '/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SPC.buildSystemPrompt(DB) },
+          { role: 'user', content: prose }
+        ],
+        temperature: 0, top_p: 0.9, max_tokens: 200, stream: false
+      }),
+      signal: AbortSignal.timeout(20000)
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      const detail = (data.error && data.error.message) || data.message || JSON.stringify(data).slice(0, 240);
+      throw new Error('Erreur LM Studio HTTP ' + res.status + (detail && detail !== '{}' ? ' · ' + detail : ''));
+    }
+    const raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+    const ai = SPC.parseAIResponse(raw, DB);
+    el.innerHTML = aiResultHTML(prose, ai.dsl, 'généré par ' + currentModelLabel() + ' · zéro token cloud', ai.explication, ai.validation, [], true);
+    lmStatus('✓ Connecté · dernière traduction OK · ' + currentModelLabel(), 'var(--accent)');
+  } catch (e) {
+    // 3. Repli sur les règles
+    const msg = /fetch|Failed|NetworkError|violates/i.test(e.message)
+      ? 'LM Studio non démarré, CORS ou CSP bloquant. En file://, lance : python -m http.server 8080 dans le dossier.'
+      : e.message;
+    el.innerHTML = `<div class="result-error">✗ ${esc(msg)}${rule.dsl
+      ? `<br><br><span class="u13">Repli sans IA :</span> <span class="u11">${esc(rule.dsl)}</span>${issuesHTML(rule.warnings, null, rule.complete)}`
+      : ''}</div>`;
+    lmStatus('✗ IA locale indisponible', 'var(--danger)');
+  }
+}
+
+function addToShortcuts(phrase, dsl) {
+  if (phrase in DB.shortcuts) return status('Ce raccourci existe déjà', true);
+  if (!confirmDSL(dsl)) return;
+  DB.shortcuts[phrase] = dsl;
+  saveDB(); render();
+  status('Raccourci ajouté !');
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); status('DSL copié'); }
+  catch (e) { status('Copie impossible (presse-papiers bloqué)', true); }
+}
+
+// ─── DÉLÉGATION D'ÉVÉNEMENTS ────────────────────────────────────────────────
+const ACTIONS = {
+  'section': d => showSection(d.id),
+  'import': () => $('import-input').click(),
+  'export': () => exportJSON(),
+  'reset': () => resetDB(),
+  'banner-load': () => { DB = clone(DEFAULT); $('version-banner').classList.remove('show'); saveDB(); render(); status('Base v' + DB.version + ' chargée'); },
+  'banner-keep': () => { $('version-banner').classList.remove('show'); saveDB({ dismissed: DEFAULT.version }); },
+  'toggle-add-shortcut': () => $('add-shortcut-form').classList.toggle('open'),
+  'add-shortcut': () => addShortcut(),
+  'edit-shortcut': d => editShortcut(d.phrase),
+  'delete-shortcut': d => deleteShortcut(d.phrase),
+  'page': d => { shortcutPage = Math.max(0, shortcutPage + Number(d.dir)); renderShortcuts(); },
+  'toggle-card': (d, el) => {
+    const open = $(d.id).classList.toggle('open');
+    $('chev-' + d.id).classList.toggle('open', open);
+    el.setAttribute('aria-expanded', String(open));
+  },
+  'add-trigger': d => addTrigger(Number(d.oi)),
+  'remove-trigger': d => { DB.operators[Number(d.oi)].triggers.splice(Number(d.ti), 1); saveDB(); render(); },
+  'add-param-trigger': d => { const op = DB.operators[Number(d.oi)]; if (addTo(op.params[d.p][d.v], 'Nouveau mot pour ' + op.id + ' ' + d.p + '=' + d.v + ' :')) { saveDB(); render(); } },
+  'remove-param-trigger': d => { DB.operators[Number(d.oi)].params[d.p][d.v].splice(Number(d.ti), 1); saveDB(); render(); },
+  'toggle-add-modifier': () => $('add-modifier-form').classList.toggle('open'),
+  'add-modifier': () => addModifier(),
+  'add-mod-trigger': d => { if (addTo(DB.modifiers[d.name], 'Nouveau mot pour le modificateur « ' + d.name + ' » :')) { saveDB(); render(); } },
+  'remove-mod-trigger': d => { DB.modifiers[d.name].splice(Number(d.ti), 1); saveDB(); render(); },
+  'add-out-trigger': d => { if (addTo(DB.output_types[d.name], 'Nouveau mot pour le type « ' + d.name + ' » :')) { saveDB(); render(); } },
+  'remove-out-trigger': d => { DB.output_types[d.name].splice(Number(d.ti), 1); saveDB(); render(); },
+  'run-test': () => runTest(),
+  'test-connection': () => testConnection(),
+  'run-ai': () => runAI(),
+  'example': (d, el) => { $('lm-input').value = el.textContent.trim(); $('lm-input').focus(); },
+  'copy': d => copyText(d.dsl),
+  'add-to-shortcuts': d => addToShortcuts(d.phrase, d.dsl)
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn) fn(el.dataset, el);
+});
+$('import-input').addEventListener('change', handleImport);
+$('shortcut-filter').addEventListener('input', e => { shortcutFilter = e.target.value; shortcutPage = 0; renderShortcuts(); });
+$('test-input').addEventListener('keydown', e => { if (e.key === 'Enter') runTest(); });
+$('lm-input').addEventListener('keydown', e => { if (e.key === 'Enter') runAI(); });
+
+initModelSelect();
+loadDB();
+render();
+</script>
+</body>
+</html>

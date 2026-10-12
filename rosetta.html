@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<!-- FICHIER GÉNÉRÉ par `node build.js` depuis src/editor.template.html + core.js + rosetta.json — ne pas éditer. -->
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-uqn8+VW+S/Mwo1F0q6KpIa2nN3qqNkZKJeti0PVaoxM=' 'sha256-lorKtC1EkxbJYNUHbv/jV5ZKpbel2Axm/bW50FuGVZY=' 'sha256-DFPSWAips1ezwrvMF1/JK5alqnWGn52NU0XU6tdbG9k='; style-src 'sha256-CwPA+kqA23aEoDvf8xRpffnmFQf3Ca+ZLrzuzdVIQck='; connect-src http://localhost:* http://127.0.0.1:*; img-src data:; base-uri 'none'; form-action 'none'">
 <title>Pierre de Rosette SPC</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0e0f11;
@@ -13,32 +14,36 @@
   --border: #2a2d35;
   --border2: #363a45;
   --text: #e8e6df;
-  --muted: #6b7280;
+  --muted: #8a919e;
   --accent: #c8f05a;
   --accent2: #5af0c8;
   --accent3: #f0a05a;
   --danger: #f05a5a;
-  --mono: 'JetBrains Mono', monospace;
-  --display: 'Syne', sans-serif;
+  /* Polices système uniquement : zéro requête réseau (JetBrains Mono / Syne utilisées si installées) */
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --display: 'Syne', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
 
 header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
   padding: 14px 24px; border-bottom: 1px solid var(--border);
   background: var(--bg2); position: sticky; top: 0; z-index: 100;
 }
 .logo { font-family: var(--display); font-size: 15px; font-weight: 800; letter-spacing: .04em; color: var(--accent); }
 .logo span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
-.header-actions { display: flex; gap: 8px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .layout { display: grid; grid-template-columns: 180px 1fr; min-height: calc(100vh - 49px); }
+@media (max-width: 700px) { .layout { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--border); } }
 
 nav { border-right: 1px solid var(--border); padding: 16px 0; background: var(--bg2); }
 .nav-section { font-size: 10px; color: var(--muted); padding: 4px 16px 8px; letter-spacing: .12em; text-transform: uppercase; }
 .nav-item {
-  display: block; padding: 8px 16px; cursor: pointer; color: var(--muted);
+  display: block; width: 100%; text-align: left; background: none; border: 0; font: inherit;
+  padding: 8px 16px; cursor: pointer; color: var(--muted);
   transition: color .15s, background .15s; border-left: 2px solid transparent;
   font-size: 12px;
 }
@@ -47,16 +52,18 @@ nav { border-right: 1px solid var(--border); padding: 16px 0; background: var(--
 .nav-count { float: right; font-size: 10px; background: var(--bg3); padding: 1px 6px; border-radius: 10px; color: var(--muted); }
 .nav-item.active .nav-count { background: rgba(200,240,90,.15); color: var(--accent); }
 
-main { padding: 24px; overflow-y: auto; }
+main { padding: 24px; overflow-y: auto; min-width: 0; }
 
 .section { display: none; }
 .section.active { display: block; }
 
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .section-title { font-family: var(--display); font-size: 18px; font-weight: 800; color: var(--text); }
 .section-title small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); margin-left: 10px; }
 
-btn, .btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.btn[disabled] { opacity: .4; cursor: default; }
 .btn-primary { background: var(--accent); color: #0e0f11; }
 .btn-primary:hover { background: #d4f56a; }
 .btn-ghost { border: 1px solid var(--border2); color: var(--muted); }
@@ -68,12 +75,14 @@ btn, .btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; 
 .btn-export:hover { background: rgba(200,240,90,.1); }
 
 .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
-.card-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.card-header { width: 100%; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; border-bottom: 1px solid var(--border); background: none; color: inherit; font: inherit; cursor: pointer; user-select: none; text-align: left; }
 .card-header:hover { background: var(--bg3); }
 .card-id { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--accent2); }
 .card-default { font-family: var(--mono); font-size: 11px; color: var(--accent); background: rgba(90,240,200,.08); padding: 3px 8px; border-radius: 4px; }
+.card-meta { font-size: 10px; color: var(--muted); }
 .card-body { padding: 14px 16px; display: none; }
 .card-body.open { display: block; }
+.card-summary { color: var(--muted); font-size: 12px; margin-bottom: 10px; line-height: 1.6; }
 
 .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; margin-top: 14px; }
 .field-label:first-child { margin-top: 0; }
@@ -83,9 +92,9 @@ btn, .btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; 
   background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
   padding: 3px 8px; font-size: 11px; color: var(--text); display: flex; align-items: center; gap: 5px;
 }
-.tag-del { color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
-.tag-del:hover { color: var(--danger); }
-.tag-add { background: transparent; border: 1px dashed var(--border2); color: var(--muted); cursor: pointer; }
+.tag-del { all: unset; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
+.tag-del:hover, .tag-del:focus-visible { color: var(--danger); }
+.tag-add { background: transparent; border: 1px dashed var(--border2); color: var(--muted); cursor: pointer; font: inherit; font-size: 11px; }
 .tag-add:hover { border-color: var(--accent); color: var(--accent); }
 
 .param-group { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
@@ -93,106 +102,156 @@ btn, .btn { all: unset; cursor: pointer; padding: 7px 14px; border-radius: 6px; 
 .param-value { margin-bottom: 6px; }
 .param-value-name { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 
-.shortcut-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 10px; align-items: center; }
-.shortcut-phrase { font-size: 12px; color: var(--text); }
+.shortcut-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+@media (max-width: 700px) { .shortcut-row { grid-template-columns: 1fr; } .shortcut-arrow { display: none; } }
+.shortcut-phrase { font-size: 12px; color: var(--text); overflow-wrap: anywhere; }
 .shortcut-arrow { color: var(--muted); font-size: 16px; }
-.shortcut-dsl { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.shortcut-dsl { font-family: var(--mono); font-size: 12px; color: var(--accent); overflow-wrap: anywhere; }
+.shortcut-dsl.invalid { color: var(--accent3); }
 .shortcut-actions { display: flex; gap: 6px; }
 
-.add-form { background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; margin-top: 12px; display: none; }
+.add-form { background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 14px; margin-top: 12px; margin-bottom: 12px; display: none; }
 .add-form.open { display: block; }
 .add-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 700px) { .add-form-row { grid-template-columns: 1fr; } }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
 input, textarea, select {
   background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
   padding: 7px 10px; color: var(--text); font-family: var(--mono); font-size: 12px;
-  outline: none; transition: border-color .15s;
+  outline: none; transition: border-color .15s; min-width: 0;
 }
 input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 textarea { resize: vertical; min-height: 60px; }
 
-.tester-area { max-width: 600px; }
+.tester-area { max-width: 680px; }
 .tester-input { display: flex; gap: 8px; margin-bottom: 16px; }
 .tester-input input { flex: 1; font-size: 13px; padding: 10px 14px; }
 .result-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
 .result-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
-.result-prose { color: var(--muted); font-size: 13px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
-.result-dsl { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+.result-prose { color: var(--muted); font-size: 13px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.result-dsl { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 10px; overflow-wrap: anywhere; }
 .result-meta { display: flex; gap: 16px; }
 .result-metric { text-align: center; }
 .result-metric-val { font-size: 18px; font-weight: 600; color: var(--accent2); }
 .result-metric-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.result-warn { color: var(--accent3); font-size: 12px; margin: 8px 0; line-height: 1.6; }
+.result-error { color: var(--danger); font-size: 13px; padding: 12px; background: rgba(240,90,90,.08); border-radius: 6px; margin-top: 10px; line-height: 1.6; overflow-wrap: anywhere; }
 .no-match { color: var(--muted); font-style: italic; }
 
 .mod-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .mod-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-.mod-name { font-size: 12px; font-weight: 600; color: var(--accent3); margin-bottom: 10px; }
+.mod-name { font-size: 12px; font-weight: 600; color: var(--accent3); margin-bottom: 4px; }
+.mod-effect { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
 
-.status-bar { position: fixed; bottom: 16px; right: 24px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 14px; font-size: 12px; color: var(--accent); transform: translateY(60px); transition: transform .25s; z-index: 200; }
+.banner { display: none; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--accent3); border-radius: 8px; background: rgba(240,160,90,.08); font-size: 12px; line-height: 1.6; }
+.banner.show { display: block; }
+.banner .actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+.status-bar { position: fixed; bottom: 16px; right: 24px; max-width: calc(100vw - 48px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 14px; font-size: 12px; color: var(--accent); transform: translateY(80px); transition: transform .25s; z-index: 200; }
 .status-bar.show { transform: translateY(0); }
+.status-bar.error { color: var(--danger); border-color: var(--danger); }
 
 .chevron { transition: transform .2s; display: inline-block; color: var(--muted); font-size: 10px; }
 .chevron.open { transform: rotate(90deg); }
 
-.inline-edit { background: var(--bg3); border: 1px solid var(--accent); border-radius: 4px; padding: 3px 8px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none; min-width: 120px; }
+.spinner { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Utilitaires : remplacent les anciens attributs de style inline (CSP style-src hachée) */
+.u1 { margin-top:12px; }
+.u2 { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+.u3 { width:180px; }
+.u4 { display:flex;gap:8px; }
+.u5 { margin-bottom:10px; }
+.u6 { font-size:12px;color:var(--muted); }
+.u7 { margin-bottom:16px;padding:14px 16px; }
+.u8 { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:14px; }
+.u9 { height:36px; }
+.u10 { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end; }
+.u11 { color:var(--accent); }
+.u12 { background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--muted); }
+.u13 { color:var(--accent2); }
+.u14 { max-width:100%; }
+.u15 { font-size:13px;padding:10px 14px; }
+.u16 { margin-top:16px; }
+.u17 { display:flex;flex-wrap:wrap;gap:6px;margin-top:6px; }
+.u18 { display:none; }
+.u19 { color:var(--muted);padding:20px 0; }
+.u20 { display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border); }
+.u21 { color:var(--text); }
+.u22 { font-size:11px;color:var(--muted);margin-top:10px;text-align:right; }
+.u23 { color:var(--muted);font-weight:400;font-size:10px; }
+.u24 { color:var(--muted);font-size:11px;margin-top:8px; }
+.u25 { display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+.u26 { margin-top:14px; }
+.u27 { color:var(--accent3);font-size:10px; }
+.u28 { margin-top:14px;display:flex;gap:8px; }
+.u29 { font-size:10px;color:var(--accent2);margin-left:8px; }
+.u30 { font-size:18px; }
+.u31 { font-size:12px;color:var(--muted);margin:8px 0 12px; }
+.u32 { margin-top:14px;display:flex;gap:8px;flex-wrap:wrap; }
+.u33 { color:var(--muted);font-size:13px;padding:14px 0; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Pierre de Rosette <span>SPC v0.1</span></div>
+  <div class="logo">Pierre de Rosette <span id="app-version">SPC</span></div>
   <div class="header-actions">
-    <button class="btn btn-ghost btn-sm" onclick="importJSON()">↑ Importer</button>
-    <button class="btn btn-export btn-sm" onclick="exportJSON()">↓ Exporter JSON</button>
+    <button class="btn btn-danger btn-sm" data-action="reset" title="Revenir à la base embarquée">⟲ Réinitialiser</button>
+    <button class="btn btn-ghost btn-sm" data-action="import">↑ Importer</button>
+    <button class="btn btn-export btn-sm" data-action="export">↓ Exporter JSON</button>
   </div>
 </header>
 
 <div class="layout">
-  <nav>
+  <nav aria-label="Sections">
     <div class="nav-section">Base de règles</div>
-    <div class="nav-item active" onclick="showSection('shortcuts')" id="nav-shortcuts">
+    <button class="nav-item active" data-action="section" data-id="shortcuts" id="nav-shortcuts">
       Raccourcis <span class="nav-count" id="cnt-shortcuts">0</span>
-    </div>
-    <div class="nav-item" onclick="showSection('operators')" id="nav-operators">
+    </button>
+    <button class="nav-item" data-action="section" data-id="operators" id="nav-operators">
       Opérateurs <span class="nav-count" id="cnt-operators">0</span>
-    </div>
-    <div class="nav-item" onclick="showSection('modifiers')" id="nav-modifiers">
+    </button>
+    <button class="nav-item" data-action="section" data-id="modifiers" id="nav-modifiers">
       Modificateurs <span class="nav-count" id="cnt-modifiers">0</span>
-    </div>
-    <div class="nav-item" onclick="showSection('outputs')" id="nav-outputs">
+    </button>
+    <button class="nav-item" data-action="section" data-id="outputs" id="nav-outputs">
       Types sortie <span class="nav-count" id="cnt-outputs">0</span>
-    </div>
-    <div class="nav-section" style="margin-top:12px">Outil</div>
-    <div class="nav-item" onclick="showSection('lmstudio')" id="nav-lmstudio" style="color:var(--accent)">IA locale <span class="nav-count" style="background:rgba(200,240,90,.15);color:var(--accent)">3 IA</span></div>
-    <div class="nav-item" onclick="showSection('tester')" id="nav-tester">Tester</div>
+    </button>
+    <div class="u1 nav-section">Outil</div>
+    <button class="nav-item" data-action="section" data-id="lmstudio" id="nav-lmstudio">IA locale <span class="nav-count" id="cnt-models">0</span></button>
+    <button class="nav-item" data-action="section" data-id="tester" id="nav-tester">Tester</button>
   </nav>
 
   <main>
+    <div class="banner" id="version-banner" role="status"></div>
 
     <div class="section active" id="section-shortcuts">
       <div class="section-header">
-        <div class="section-title">Raccourcis <small>phrase exacte → DSL direct</small></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" placeholder="Rechercher…" oninput="filterShortcuts(this.value)"
-            style="font-size:12px;padding:5px 10px;width:180px;border-radius:var(--border-radius-md, 6px);border:1px solid var(--border2);background:var(--bg3);color:var(--text)">
-          <button class="btn btn-primary btn-sm" onclick="toggleAddShortcut()">+ Ajouter</button>
+        <div class="section-title">Raccourcis <small>phrase → DSL direct (la plus longue correspondance gagne)</small></div>
+        <div class="u2">
+          <input class="u3" type="search" id="shortcut-filter" placeholder="Rechercher…" aria-label="Rechercher un raccourci">
+          <button class="btn btn-primary btn-sm" data-action="toggle-add-shortcut">+ Ajouter</button>
         </div>
       </div>
       <div id="add-shortcut-form" class="add-form">
         <div class="add-form-row">
           <div class="form-group">
-            <label class="form-label">Phrase (en prose)</label>
+            <label class="form-label" for="sc-phrase">Phrase (en prose)</label>
             <input id="sc-phrase" type="text" placeholder="analyse ce texte en profondeur">
           </div>
           <div class="form-group">
-            <label class="form-label">DSL généré</label>
+            <label class="form-label" for="sc-dsl">DSL généré</label>
             <input id="sc-dsl" type="text" placeholder="ANALYZE[◈, ▲]">
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-sm" onclick="addShortcut()">Ajouter</button>
-          <button class="btn btn-ghost btn-sm" onclick="toggleAddShortcut()">Annuler</button>
+        <div class="u4">
+          <button class="btn btn-primary btn-sm" data-action="add-shortcut">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" data-action="toggle-add-shortcut">Annuler</button>
         </div>
       </div>
       <div id="shortcuts-list"></div>
@@ -200,30 +259,31 @@ textarea { resize: vertical; min-height: 60px; }
 
     <div class="section" id="section-operators">
       <div class="section-header">
-        <div class="section-title">Opérateurs <small>déclencheurs + paramètres</small></div>
+        <div class="section-title">Opérateurs <small>déclencheurs + paramètres · ordre sans effet (priorité explicite)</small></div>
       </div>
       <div id="operators-list"></div>
     </div>
 
     <div class="section" id="section-modifiers">
       <div class="section-header">
-        <div class="section-title">Modificateurs <small>mots qui affectent le DSL</small></div>
-        <button class="btn btn-primary btn-sm" onclick="toggleAddModifier()">+ Ajouter</button>
+        <div class="section-title">Modificateurs <small>mots qui affectent la forme du DSL</small></div>
+        <button class="btn btn-primary btn-sm" data-action="toggle-add-modifier">+ Ajouter</button>
       </div>
       <div id="add-modifier-form" class="add-form">
         <div class="add-form-row">
           <div class="form-group">
-            <label class="form-label">Nom du modificateur</label>
-            <input id="mod-name" type="text" placeholder="lazy_load">
+            <label class="form-label" for="mod-name">Nom du modificateur</label>
+            <input id="mod-name" type="text" placeholder="mon_modificateur">
           </div>
           <div class="form-group">
-            <label class="form-label">Déclencheurs (séparés par ,)</label>
-            <input id="mod-triggers" type="text" placeholder="si besoin, à la demande, en attente">
+            <label class="form-label" for="mod-triggers">Déclencheurs (séparés par ,)</label>
+            <input id="mod-triggers" type="text" placeholder="mot, autre mot">
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-sm" onclick="addModifier()">Ajouter</button>
-          <button class="btn btn-ghost btn-sm" onclick="toggleAddModifier()">Annuler</button>
+        <p class="u5 card-meta">Les 7 noms réservés (▲_max, pipe, conditional, else, store, session_close, lazy_load) sont les seuls interprétés par le transpileur ; un modificateur personnalisé sert de documentation pour l'IA locale.</p>
+        <div class="u4">
+          <button class="btn btn-primary btn-sm" data-action="add-modifier">Ajouter</button>
+          <button class="btn btn-ghost btn-sm" data-action="toggle-add-modifier">Annuler</button>
         </div>
       </div>
       <div class="mod-section" id="modifiers-list"></div>
@@ -238,74 +298,65 @@ textarea { resize: vertical; min-height: 60px; }
 
     <div class="section" id="section-tester">
       <div class="section-header">
-        <div class="section-title">Tester <small>prose → DSL sans IA</small></div>
+        <div class="section-title">Tester <small>prose → DSL sans IA (même moteur que le CLI)</small></div>
       </div>
       <div class="tester-area">
         <div class="tester-input">
-          <input id="test-input" type="text" placeholder="analyse ce code en profondeur sur le plan technique" onkeydown="if(event.key==='Enter')runTest()">
-          <button class="btn btn-primary" onclick="runTest()">Transpiler</button>
+          <input id="test-input" type="text" aria-label="Instruction à transpiler" placeholder="analyse ce code en profondeur puis compresse le résultat">
+          <button class="btn btn-primary" data-action="run-test">Transpiler</button>
         </div>
-        <div id="test-result"></div>
+        <div id="test-result" aria-live="polite"></div>
       </div>
     </div>
 
-
     <div class="section" id="section-lmstudio">
       <div class="section-header">
-        <div class="section-title">IA locale <small>Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder via LM Studio</small></div>
-        <div id="lm-status" style="font-size:12px;color:var(--muted)">Non connecté</div>
+        <div class="section-title">IA locale <small>via LM Studio (API OpenAI-compatible, localhost)</small></div>
+        <div class="u6" id="lm-status" aria-live="polite">Non connecté</div>
       </div>
 
-      <div class="card" style="margin-bottom:16px;padding:14px 16px">
-        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-bottom:14px">
+      <div class="u7 card">
+        <div class="u8">
           <div class="form-group">
-            <label class="form-label">URL LM Studio</label>
-            <input id="lm-url" type="text" value="http://localhost:1234" style="font-size:12px">
+            <label class="form-label" for="lm-url">URL LM Studio</label>
+            <input id="lm-url" type="text" value="http://localhost:1234">
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="testConnection()" style="height:36px">Tester connexion</button>
+          <button class="u9 btn btn-ghost btn-sm" data-action="test-connection">Tester connexion</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end">
+        <div class="u10">
           <div class="form-group">
-            <label class="form-label">IA locale</label>
-            <select id="lm-model-select" onchange="syncModelFromSelect()" style="font-size:12px;color:var(--accent);font-family:var(--mono)">
-              <option value="google/gemma-3-4b">Gemma 3 4B</option>
-              <option value="mistral-nemo-instruct-2407">Mistral Nemo Instruct 2407</option>
-              <option value="Qwen2.5-Coder-7B-Instruct-Q4_K_M">Qwen2.5-Coder 7B Instruct Q4_K_M</option>
-              <option value="custom">Modèle personnalisé</option>
-            </select>
+            <label class="form-label" for="lm-model-select">IA locale</label>
+            <select class="u11" id="lm-model-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Identifiant modèle LM Studio</label>
-            <input id="lm-model" type="text" value="google/gemma-3-4b" onchange="syncCustomModel()" style="font-size:12px;color:var(--accent);font-family:var(--mono)">
+            <label class="form-label" for="lm-model">Identifiant modèle LM Studio</label>
+            <input class="u11" id="lm-model" type="text">
           </div>
         </div>
       </div>
 
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--muted)">
-        <strong style="color:var(--accent2)">Architecture :</strong> Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder traduit la prose en DSL (zéro token cloud).
-        Le DSL compressé est ensuite envoyé à Claude ou tout autre LLM en ligne.<br>
-        <strong style="color:var(--accent2)">Compatibilité :</strong> mode JSON strict par prompt, sans paramètre <code>response_format</code>, pour éviter l'erreur HTTP 400 sur certaines versions de LM Studio.<br>
-        <strong style="color:var(--accent2)">Prérequis :</strong> LM Studio démarré · Serveur local activé · Gemma 3 4B, Mistral Nemo ou Qwen2.5-Coder chargé
+      <div class="u12">
+        <strong class="u13">Ordre de résolution :</strong> 1. raccourci de la BDD (IA non consultée) · 2. IA locale · 3. repli sur les règles si l'IA échoue.<br>
+        <strong class="u13">Contrôle :</strong> le DSL renvoyé par le modèle est validé contre le schéma de la BDD ; les écarts sont signalés.<br>
+        <strong class="u13">Tokens :</strong> estimation locale identique dans tous les modes (les chiffres annoncés par le modèle sont ignorés).<br>
+        <strong class="u13">Prérequis :</strong> LM Studio démarré · serveur local activé · modèle chargé. En <code>file://</code>, si CORS bloque : <code>python -m http.server 8080</code>.
       </div>
 
-      <div class="tester-area" style="max-width:100%">
+      <div class="u14 tester-area">
         <div class="tester-input">
-          <input id="lm-input" type="text"
-            placeholder="Décris en langage naturel ce que tu veux faire…"
-            onkeydown="if(event.key==='Enter')runAI()"
-            style="font-size:13px;padding:10px 14px">
-          <button class="btn btn-primary" onclick="runAI()">Traduire via IA locale</button>
+          <input class="u15" id="lm-input" type="text" aria-label="Instruction pour l'IA locale" placeholder="Décris en langage naturel ce que tu veux faire…">
+          <button class="btn btn-primary" data-action="run-ai">Traduire via IA locale</button>
         </div>
-        <div id="lm-result"></div>
-        <div style="margin-top:16px">
+        <div id="lm-result" aria-live="polite"></div>
+        <div class="u16">
           <p class="form-label">Exemples rapides</p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="lm-examples">
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">analyze the codebase for security issues</button>
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">refactor this into functional components</button>
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">write unit tests and validate coverage</button>
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">fix the authentication bug then deploy to staging</button>
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">copie ce composant et adapte-le pour mobile</button>
-            <button class="btn btn-ghost btn-sm" onclick="setLMInput(this.textContent)">active la résonance symbolique sur tout le texte</button>
+          <div class="u17">
+            <button class="btn btn-ghost btn-sm" data-action="example">analyze the codebase for security issues</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">refactor this into functional components</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">write unit tests and validate coverage</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">fix the authentication bug then deploy to staging</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">copie ce composant et adapte-le pour mobile</button>
+            <button class="btn btn-ghost btn-sm" data-action="example">active la résonance symbolique sur tout le texte</button>
           </div>
         </div>
       </div>
@@ -314,138 +365,1162 @@ textarea { resize: vertical; min-height: 60px; }
   </main>
 </div>
 
-<div class="status-bar" id="status-bar">Sauvegardé</div>
-
-<input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImport(event)">
+<div class="status-bar" id="status-bar" role="status">Sauvegardé</div>
+<input class="u18" type="file" id="import-input" accept=".json,application/json" aria-hidden="true">
 
 <script>
-const DEFAULT = {"version":"0.1","description":"Pierre de Rosette SPC — règles de transpilation prose→DSL, sans IA","operators":[{"id":"SCAN","triggers":["scan","regarde","lis","vérifie","parcours","survole","jette un oeil","check","contrôle","review","look at","verify","inspect","look over","browse","look","survey","observe","read through","assess","audit","lint"],"default":"SCAN[◈]","params":{"focus":{"surface":["rapidement","vite","en surface","globalement","overview","quick"],"structure":["structure","organisation","architecture","layout","pattern","design"],"anomalies":["bug","bugs","erreur","problème","anomalie","ce qui ne va pas","error","issue","problem","never","avoid","fix"],"security":["security","auth","authentication","token","password","secret","sensitive","sécurité"],"tests":["test","spec","coverage","unit","integration","testing"]}}},{"id":"ANALYZE","triggers":["analyse","analyser","décompose","examine","étudie","creuse","explore","inspecte","analyze","study","investigate","deep dive","breakdown","understand","evaluate","assess","diagnose","profile"],"default":"ANALYZE[◈]","params":{"ctx":{"technique":["code","technique","fonctionnel","logique","algorithme","clean architecture","dependency injection","codebase","typescript","implementation","technical","react","nextjs","api","database","docker","performance","bundle","state management"],"symbolique":["symbolique","symbole","sens profond","signification","archétype","sens","meaning","symbolic","narrative"],"narratif":["narratif","récit","histoire","narration","storytelling","narrative","story","user story"],"rationnel":["rationnel","logique","factuel","objectif","logic","rational","factual","objective"]},"depth":{"1":["rapidement","vite","en surface","brièvement"],"2":["normalement","standard"],"3":["en profondeur","approfondi","détaillé","en détail","profondément","▲","analyze the existing codebase","comprehensive analysis","in-depth","thoroughly","deeply"]}}},{"id":"COMPARE","triggers":["compare","comparer","contraste","différence entre","vs","versus","contrast","distinguish","differentiate","benchmark"],"default":"COMPARE[a=◈, b=§1]","params":{}},{"id":"RESONE","triggers":["résonance","résonne","couches","symbolique","sens","activates","résonner","résoner"],"default":"RESONE[◈]","params":{"layers":{"sémantique":["sémantique","signification","sens littéral"],"émotionnel":["émotionnel","ressenti","émotion","feeling"],"symbolique":["symbolique","archétype","symbole"],"narratif":["narratif","récit"],"all":["toutes les couches","tout","complet","entier","all"]}}},{"id":"TRANSDUIT","triggers":["transforme","convertis","traduis","change de registre","passe en","transpose","refactore","refactor","convert","transform","migrate","translate","rewrite","adapt","port","restructure","reorganize","modernize","update to"],"default":"TRANSDUIT[◈]","params":{"from":{"technique":["depuis technique","depuis le code"],"symbolique":["depuis symbolique"],"prose":["depuis prose","depuis le texte"],"rationnel":["depuis rationnel"]},"to":{"STÈLE":["en stèle","en glyphes","en chaîne stèle"],"symbolique":["en symbolique","vers symbolique"],"prose":["en prose","en texte","en français"],"SPC":["en spc","en dsl","en compact"]}}},{"id":"COMPRESS","triggers":["compresse","résume","réduis","archive","synthétise","condense","minimise","garde minimal","keep minimal","minimize","keep small","reduce","compress","simplify","make minimal","keep diff small","trim","shorten","abbreviate"],"default":"COMPRESS[◈]","params":{"format":{"STÈLE":["en stèle","en glyphes"],"SPC":["en spc","en dsl"]},"ratio":{"max":["au maximum","le plus court possible","minimal","▲"],"balanced":["équilibré","normal"],"light":["léger","peu"]}}},{"id":"APPLY","triggers":["applique","utilise","lance","active","charge","use","emploie","implement","apply","follow","enforce","adopt","employ","utilize","leverage","stick to","rely on"],"default":"APPLY[@skill, ◈]","params":{"skill":{"@stele":["stèle","stele","l'alphabet"],"@fractales":["fractales","oracle","tirage"],"@metalangage":["métalangage","metalangage","résonances"],"@ler":["ler","écriture-réalité"]}}},{"id":"EXPAND","triggers":["déploie","développe","étends","explicite","détaille depuis","documente","commente","détaille","document","explain","provide","describe","add comments","include","expand","detail","generate docs","elaborate","comment","annotate"],"default":"EXPAND[seed=◈]","params":{}},{"id":"FILTER","triggers":["filtre","garde seulement","ne garde que","supprime","enlève","exclut","évite","avoid","never","exclude","remove","filter","strip","ignore","omit","don't use","discard","skip","reject","prevent","forbid","block","dont use","do not use"],"default":"FILTER[◈]","params":{}},{"id":"ITERATE","triggers":["répète","refais","itère","pour chaque","sur tous","one by one","for each","iterate","loop","for all","step by step","repeat","go through","process each","test all"],"default":"ITERATE[op=ANALYZE, n=3]","params":{}},{"id":"CLONE","triggers":["copie","colle","copier-coller","copier","dupliquer","répliquer","reproduire","clone","copy","paste","duplicate","replicate","mirror","scaffold from","base on","modeled on","same as","like this but","similar to","inspired from","scaffold","model on"],"default":"CLONE[source=◈, target=§1]","params":{"adapt":{"oui":["adapte","modifie","en adaptant","with changes","adjusted","modified","but with"],"non":["identique","exact","verbatim","sans changement","as is","exact copy"]},"scope":{"composant":["composant","component","widget","module"],"fonction":["fonction","function","method","méthode"],"structure":["structure","pattern","template","architecture","scaffold"]}}},{"id":"VALIDATE","triggers":["validate","verify","ensure","check that","confirm","assert","test","make sure","valide","vérifie","assure-toi","confirme","teste","assure"],"default":"VALIDATE[◈]","params":{"scope":{"types":["type","typescript","typing","types","typed"],"tests":["test","tests","unit","integration","coverage","spec"],"security":["security","auth","permission","access","role","token"],"schema":["schema","format","structure","shape","contract"]}}},{"id":"DEPLOY","triggers":["deploy","build","ship","release","publish","push","bundle","compile","déploie","publie","compile","lance","ship"],"default":"DEPLOY[◈]","params":{"env":{"prod":["production","prod","live"],"staging":["staging","preprod","test env"],"dev":["dev","local","development"]}}},{"id":"DEBUG","triggers":["debug","fix","resolve","troubleshoot","investigate error","trace","diagnose","répare","corrige","résous","débogue","investigate"],"default":"DEBUG[◈]","params":{"focus":{"error":["error","exception","crash","bug","issue","problem"],"performance":["slow","performance","latency","timeout","memory"],"logic":["logic","wrong output","incorrect","unexpected"]}}},{"id":"CREATE","triggers":["create","generate","scaffold","build","make","new","init","bootstrap","setup","create a","generate a","build a","make a","new component","new file","new module","from scratch","boilerplate","starter","template for","set up"],"default":"CREATE[◈]","params":{"type":{"component":["component","widget","element","ui","button","form","modal","page"],"function":["function","method","helper","util","hook","handler","callback"],"api":["api","endpoint","route","controller","service","rest","graphql"],"schema":["schema","model","type","interface","struct","entity","dto"],"test":["test file","spec","test suite","mock","fixture"],"config":["config","configuration","settings","env","dotenv","setup file"]},"from":{"scratch":["from scratch","from zero","brand new","empty","blank","new"],"template":["template","boilerplate","starter","pattern","convention"]}}},{"id":"ADD","triggers":["add","inject","insert","include","append","extend","augment","plug in","attach","add to","add a","add the","insert into","include in","extend with","introduce","wire up","hook up","connect","integrate"],"default":"ADD[target=◈]","params":{"what":{"feature":["feature","functionality","capability","behavior","support for"],"error-handling":["error handling","try catch","exception","fallback","guard"],"logging":["logging","log","console","trace","monitoring"],"validation":["validation","validator","check","guard","sanitize"],"pagination":["pagination","paging","infinite scroll","load more"],"auth":["auth","authentication","authorization","jwt","session","middleware"],"field":["field","property","attribute","column","key","param"]},"scope":{"*":["all","every","each","across","throughout","globally"],"◈":["this","here","current","this one"]}}},{"id":"FIND","triggers":["find","search","locate","look for","where is","where are","grep","trace","search for","find all","find where","look for","scan for","detect all","usages of","references to","calls to","instances of","occurrences of"],"default":"FIND[input=*, pattern=◈]","params":{"scope":{"*":["all","everywhere","entire","whole","codebase","project","across"],"file":["in this file","current file","here"],"function":["in this function","in this method"]},"type":{"usage":["usage","usages","used","uses","called","calls to","references"],"pattern":["pattern","occurrences","instances","matches","similar"],"import":["import","imported","dependency","depends on"],"definition":["defined","definition","declaration","where is defined"]}}}],"modifiers":{"▲_max":["en profondeur","au maximum","approfondi","▲","tout","thoroughly","deeply","comprehensive","in-depth","at all times","fully"],"pipe":["puis","ensuite","après","et puis","suivi de","⟶","then","after that","followed by","once done","next"],"conditional":["si","s'il y a","s'il existe","au cas où","if","when","in case","whenever","as long as","quand","lorsque"],"else":["sinon","autrement","dans le cas contraire"],"store":["stocke","garde","mémorise","sauvegarde","conserve","save","remember","store","keep track","maintain state","log"],"session_close":["archive la session","clôture","ferme la session","⊜","scelle","finalize","wrap up","commit","done","finished","terminé","fini"],"lazy_load":["en attente","si besoin","à la demande","⌒"]},"output_types":{"prose":["en prose","en texte","en français","explique","explain","describe","summary","as text"],"outline":["liste","en liste","résumé structuré","outline","list of","enumerate","as a list","step by step","étapes"],"STÈLE":["en stèle","en glyphes","chaîne stèle"],"table":["tableau","en tableau","table","as table","comparison","versus","compare"],"signature":["signature","court","court résumé"],"code":["as code","generate code","implement","en code","code"]},"shortcuts":{"active la résonance sur tout":"RESONE[◈, layers=all]","transforme en stèle":"COMPRESS[◈, format=STÈLE] → signature","check your work":"SCAN[◈, focus=anomalies] → outline","check for simpler approaches":"SCAN[◈, focus=structure] → outline","review the current project":"SCAN[◈, focus=structure] → outline","check all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","analyze the codebase":"ANALYZE[◈, ctx=technique, depth=3] → outline","analyze design screenshots":"ANALYZE[◈, ctx=technique, depth=2] → outline","generate comprehensive analysis":"ANALYZE[◈, ▲] → prose","avoid using deprecated":"FILTER[◈, ⊘deprecated]","never use any":"FILTER[◈, ⊘any]","never log sensitive data":"FILTER[◈, ⊘sensitive]","avoid clutter":"FILTER[◈, ⊘unnecessary]","use strict typescript":"APPLY[@convention::typescript-strict, ◈]","implement clean architecture":"APPLY[@convention::clean-arch, ◈]","implement dependency injection":"APPLY[@convention::di, ◈]","use factory functions":"APPLY[@convention::factory, ◈]","write unit tests for new code":"VALIDATE[*, scope=tests] → outline","ensure all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","make diff as small as possible":"COMPRESS[◈, ratio=max]","keep it simple":"COMPRESS[◈, ratio=balanced]","minimize impact":"COMPRESS[◈, ratio=max]","document your project structure":"EXPAND[seed=◈, ctx=structure] → prose","generate a commit message":"EXPAND[seed=◈, ctx=git] → prose","provide context":"EXPAND[seed=◈] → prose","refactor continuously":"TRANSDUIT[◈, from=current, to=clean]","refactor beyond scope":"TRANSDUIT[◈, from=verbose, to=minimal]","write idiomatic code":"TRANSDUIT[◈, from=generic, to=idiomatic]","scaffold from this":"CLONE[source=◈, scope=structure] → §1","same as but with":"CLONE[source=◈, adapt=oui]","copy this component":"CLONE[source=◈, scope=composant] → §1","replicate this pattern":"CLONE[source=◈, scope=structure] → §1","always use typescript strict mode":"APPLY[@convention::ts-strict, ◈]","always handle errors":"VALIDATE[◈, scope=error] ⟶ DEBUG[◈, focus=error]","always write tests":"VALIDATE[◈, scope=tests]","always follow naming conventions":"APPLY[@convention::naming, ◈]","never use any type":"FILTER[◈, ⊘any]","never commit secrets":"FILTER[◈, ⊘secrets]","never ignore errors":"VALIDATE[◈, scope=error] ? null : DEBUG[◈, focus=error]","prefer functional components":"APPLY[@convention::functional, ◈]","prefer composition over inheritance":"TRANSDUIT[◈, from=oop, to=functional]","prefer explicit over implicit":"EXPAND[seed=◈, ctx=explicit]","optimize for performance":"ANALYZE[ctx=technique, focus=performance, ▲]","optimize bundle size":"COMPRESS[◈, ratio=max]","keep code simple":"COMPRESS[◈, ratio=balanced]","keep it minimal":"COMPRESS[◈, ratio=max]","keep functions small":"FILTER[◈, ⊘complexity]","implement error handling":"APPLY[@convention::error-handling, ◈]","implement proper state management":"APPLY[@convention::state, ◈]","write unit tests":"VALIDATE[◈, scope=tests] → outline","write clean code":"APPLY[@convention::clean-code, ◈]","follow best practices":"APPLY[@convention::best-practices, ◈]","follow the existing patterns":"CLONE[source=◈, scope=structure]","follow project conventions":"APPLY[@convention::project, ◈]","generate commit message":"EXPAND[seed=◈, ctx=git] → prose","generate documentation":"EXPAND[seed=◈, ctx=docs] → prose","fix the bug":"DEBUG[◈, focus=error]","debug this error":"DEBUG[◈, focus=error]","investigate the issue":"SCAN[◈, focus=anomalies] ⟶ DEBUG[◈]","build for production":"DEPLOY[◈, env=prod]","check this code for issues":"SCAN[◈, focus=anomalies] → outline","analyze in depth":"ANALYZE[◈, ▲]","archive the session":"⊜","copy this component and adapt it":"CLONE[source=◈, adapt=oui] → §1","duplicate this function":"CLONE[source=◈, scope=fonction] → §1","same structure as":"CLONE[source=◈, adapt=oui, scope=structure]","write the tests":"VALIDATE[◈, scope=tests]","deploy to production":"DEPLOY[◈, env=prod]","create a new component":"CREATE[◈, type=component, from=scratch]","generate a boilerplate":"CREATE[◈, type=component, from=template]","scaffold a new api endpoint":"CREATE[◈, type=api, from=scratch]","create a new function":"CREATE[◈, type=function, from=scratch]","init a new config file":"CREATE[◈, type=config, from=scratch]","generate a test file":"CREATE[◈, type=test, from=scratch]","create a typescript interface":"CREATE[◈, type=schema, from=scratch]","build a new service":"CREATE[◈, type=api, from=scratch]","add error handling":"ADD[target=◈, what=error-handling]","add error handling to all":"ADD[target=*, what=error-handling]","add validation":"ADD[target=◈, what=validation]","add logging":"ADD[target=◈, what=logging]","add pagination":"ADD[target=◈, what=pagination]","add authentication":"ADD[target=◈, what=auth]","add a field to":"ADD[target=◈, what=field]","inject the dependency":"ADD[target=◈, what=feature]","wire up the api":"ADD[target=◈, what=feature]","find all usages":"FIND[input=*, type=usage, pattern=◈]","find all references":"FIND[input=*, type=usage, pattern=◈]","where is this function called":"FIND[input=*, type=usage, pattern=◈]","search for this pattern":"FIND[input=*, type=pattern, pattern=◈]","find all imports of":"FIND[input=*, type=import, pattern=◈]","where is this defined":"FIND[input=*, type=definition, pattern=◈]","create a responsive navbar":"CREATE[◈, type=component, from=scratch]","create a modal component":"CREATE[◈, type=component, from=scratch]","create a custom hook for api calls":"CREATE[◈, type=function, from=scratch]","create a data table with sorting":"CREATE[◈, type=component, from=scratch]","create a toast notification system":"CREATE[◈, type=component, from=scratch]","create a form with validation":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation]","add dark mode toggle":"ADD[target=◈, what=feature]","add loading spinner":"ADD[target=◈, what=feature]","add infinite scroll":"ADD[target=◈, what=pagination]","add keyboard shortcuts":"ADD[target=◈, what=feature]","add skeleton loader":"ADD[target=◈, what=feature]","create a rest api endpoint":"CREATE[◈, type=api, from=scratch]","create a webhook handler":"CREATE[◈, type=api, from=scratch]","create a cron job":"CREATE[◈, type=function, from=scratch]","create a cache layer":"ADD[target=◈, what=feature]","add rate limiting":"ADD[target=◈, what=feature]","add cors configuration":"ADD[target=◈, what=feature]","add retry logic":"ADD[target=◈, what=error-handling]","add request validation":"ADD[target=◈, what=validation]","add database migration":"CREATE[◈, type=config, from=scratch]","add typescript types":"ADD[target=◈, what=field]","fix all type errors":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=types]","infer the return type":"ANALYZE[◈, ctx=technique, depth=2] → prose","add strict null checks":"VALIDATE[◈, scope=types]","add generic types":"ADD[target=◈, what=field]","write tests for this function":"CREATE[◈, type=test, from=scratch]","add integration tests":"ADD[target=◈, what=feature]","mock this service":"CLONE[source=◈, adapt=oui, scope=fonction]","test edge cases":"VALIDATE[◈, scope=tests]","check test coverage":"SCAN[◈, focus=tests] → outline","add snapshot tests":"ADD[target=◈, what=feature]","why is this not working":"DEBUG[◈, focus=logic]","trace this error":"DEBUG[◈, focus=error]","find the memory leak":"DEBUG[◈, focus=performance]","why is this slow":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","fix the undefined error":"DEBUG[◈, focus=error]","fix the null pointer":"DEBUG[◈, focus=error]","debug the race condition":"DEBUG[◈, focus=logic]","split this into smaller functions":"TRANSDUIT[◈, from=verbose, to=minimal]","remove code duplication":"FILTER[◈, ⊘duplicate] ⟶ CLONE[source=◈, adapt=oui]","make this more readable":"TRANSDUIT[◈, from=complex, to=readable]","extract this into a separate file":"TRANSDUIT[◈, from=inline, to=module]","convert class to functional":"TRANSDUIT[◈, from=oop, to=functional]","simplify this logic":"COMPRESS[◈, ratio=balanced]","rename all instances":"FIND[input=*, type=usage, pattern=◈] ⟶ TRANSDUIT[*, from=current, to=new]","document this function":"EXPAND[seed=◈, ctx=docs] → prose","add jsdoc comments":"EXPAND[seed=◈, ctx=jsdoc] → code","generate api documentation":"EXPAND[seed=◈, ctx=docs] → prose","write a commit message":"EXPAND[seed=◈, ctx=git] → prose","create a changelog entry":"EXPAND[seed=◈, ctx=changelog] → prose","explain what this does":"ANALYZE[◈, ctx=technique, depth=2] → prose","explain this code":"ANALYZE[◈, ctx=technique, depth=2] → prose","review my changes":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=2]","check for breaking changes":"SCAN[◈, focus=anomalies] ⟶ COMPARE[a=◈, b=◊]","prepare for code review":"ANALYZE[◈, ctx=technique, depth=2] ⟶ VALIDATE[◈, scope=tests]","check what changed":"COMPARE[a=◈, b=◊] → outline","check for security vulnerabilities":"SCAN[◈, focus=security] → outline","add input sanitization":"ADD[target=◈, what=validation]","check for sql injection":"SCAN[◈, focus=security]","add csrf protection":"ADD[target=◈, what=auth]","find exposed secrets":"FIND[input=*, type=pattern, pattern=◈]","audit dependencies":"SCAN[◈, focus=security] ⟶ FIND[input=*, type=import, pattern=◈]","optimize this query":"ANALYZE[◈, ctx=technique, ▲] ⟶ TRANSDUIT[◈, from=slow, to=optimized]","reduce bundle size":"COMPRESS[◈, ratio=max]","lazy load this component":"ADD[target=◈, what=feature]","memoize this function":"ADD[target=◈, what=feature]","profile the performance":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","remove unused imports":"FILTER[◈, ⊘unused]","separate concerns":"TRANSDUIT[◈, from=monolithic, to=modular]","create a service layer":"CREATE[◈, type=api, from=scratch]","add dependency injection":"ADD[target=◈, what=feature]","implement repository pattern":"APPLY[@convention::repository, ◈]","create a middleware":"CREATE[◈, type=function, from=scratch]","full code review":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=3] ⟶ VALIDATE[◈, scope=tests] → outline","fix and test":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=tests]","refactor and document":"TRANSDUIT[◈, from=complex, to=readable] ⟶ EXPAND[seed=◈, ctx=docs] → prose","create and validate":"CREATE[◈, type=component, from=scratch] ⟶ VALIDATE[◈, scope=types]","build and deploy":"VALIDATE[*, scope=tests] ? DEPLOY[◈, env=prod] : DEBUG[*, focus=error]","full feature workflow":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation] ⟶ CREATE[◈, type=test, from=scratch] ⟶ VALIDATE[*, scope=tests]"}};
+/* ===== core.js (inliné par build.js — ne pas éditer ici) ===== */
+/**
+ * core.js — Noyau partagé de la Pierre de Rosette SPC.
+ *
+ * Fonctions pures, sans I/O ni DOM. Utilisé tel quel par :
+ *   - rosetta.js   (CLI Node : require('./core'))
+ *   - rosetta.html (éditeur : inliné par build.js, exposé en global `SPC`)
+ *
+ * Shared core of the SPC Rosetta Stone (prose → DSL transpiler, DSL validator,
+ * token estimator, tolerant parser for local-LLM answers).
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.SPC = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
 
-let DB = JSON.parse(JSON.stringify(DEFAULT));
+  // Noms de modificateurs à sémantique fixe (réservés).
+  const MOD = {
+    MAX: '▲_max', PIPE: 'pipe', COND: 'conditional', ELSE: 'else',
+    STORE: 'store', CLOSE: 'session_close', LAZY: 'lazy_load'
+  };
+  // Marqueurs structurels intégrés (en plus de ceux de la BDD).
+  const BUILTIN_PIPE = [';'];
+  const THEN_MARKERS = ['alors', 'then', ','];
+  // Condition formulée à l'échec (« si les tests échouent ») : la branche part dans « sinon ».
+  const NEGATIVE = new Set(['fail', 'fails', 'failed', 'failing', 'echoue', 'echouent', 'echoues', 'echec', 'echecs',
+    'not', 'pas', "n't", 'broken', 'casse', 'cassee', 'cassent', 'plante', 'plantent', 'crash', 'crashes', 'ko',
+    'error', 'errors', 'erreur', 'erreurs']);
+  // mots entiers uniquement (sans racinisation : « pass » ≠ « pas »)
+  const isNegative = text => text.split(/[^\p{L}\p{N}']+/u).some(w => NEGATIVE.has(w) || w.endsWith("n't"));
+  /** Spans des mots négatifs d'un texte (masqués lors du choix de l'opérateur d'une condition négative). */
+  function negativeSpans(text) {
+    const out = [];
+    const re = /[\p{L}\p{N}']+/gu;
+    let m;
+    while ((m = re.exec(text))) if (NEGATIVE.has(m[0]) || m[0].endsWith("n't")) out.push({ start: m.index, end: m.index + m[0].length });
+    return out;
+  }
+  // Atténuateurs (« si possible ») : pas des conditions, retirés avant l'analyse.
+  const SOFTENERS = ['si possible', 'if possible', 'si necessaire', 'if necessary', 'if needed',
+    'when possible', 'dans la mesure du possible', 'au besoin'];
+  // Coordination « , / et / and » : séparateurs souples (voir splitCoordination).
+  const AND_MARKERS = ['et', 'and'];
+  const SOFT_MARKERS = [',', ...AND_MARKERS];
+  const NUM_RE = /(\d+)\s*(?:fois|times|x|passes?|iterations?|tours?)\b/;
+
+  // Symboles positionnels admis dans un argument d'opérateur.
+  const REF_RE = /^(◈|\*|◊|▲|§\d+)$/;
+  const NEG_RE = /^⊘[\p{L}\p{N}_\-.:]+$/u;
+  const SKILL_RE = /^@[\p{L}\p{N}_\-]+(?:::[\p{L}\p{N}_\-]+)?⌒?$/u;
+
+  // ─── NORMALISATION ─────────────────────────────────────────────────────────
+  /** Minuscules, sans diacritiques, apostrophes unifiées, espaces compactés. */
+  function normalize(str) {
+    return String(str == null ? '' : str)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[\u2018\u2019\u02BC\u0060\u00B4]/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  const WORD_CH = /[\p{L}\p{N}]/u;
+  const isWord = c => !!c && WORD_CH.test(c);
+
+  /**
+   * Toutes les occurrences de `term` dans `n` (déjà normalisés) qui respectent
+   * les frontières de mots. Un « s » final de pluriel est toléré
+   * (« test » trouve « tests », mais « use » ne trouve plus « because »).
+   */
+  function findAll(n, term) {
+    const out = [];
+    if (!term) return out;
+    const first = term[0], last = term[term.length - 1];
+    let i = n.indexOf(term);
+    while (i !== -1) {
+      const end = i + term.length;
+      const leftOk = i === 0 || !isWord(first) || !isWord(n[i - 1]);
+      if (leftOk) {
+        if (end === n.length || !isWord(last) || !isWord(n[end])) {
+          out.push({ start: i, end });
+        } else if (n[end] === 's' && isWord(last) && !isWord(n[end + 1])) {
+          out.push({ start: i, end: end + 1 });
+        }
+      }
+      i = n.indexOf(term, i + 1);
+    }
+    return out;
+  }
+
+  // ─── RACINISATION LÉGÈRE (FR + EN) ─────────────────────────────────────────
+  // Suffixes retirés (le plus long d'abord) avec la longueur minimale du radical
+  // restant ; jusqu'à 3 passes. Comparaison mot à mot uniquement : un radical ne
+  // peut pas matcher l'intérieur d'un autre mot (« use » ≠ « because »).
+  //   validation/valide/validate/validated → valid · compilation/compile → compil
+  //   scanne/scanner/scanning → scan · refactorise/refactoring → refactor
+  const SUFFIXES = [
+    ['ations', 4], ['ation', 4], ['ements', 4], ['ement', 4], ['ments', 4], ['ment', 4],
+    ['ings', 3], ['ing', 3], ['ions', 4], ['ion', 4], ['ises', 4], ['ise', 4], ['izes', 4], ['ize', 4],
+    ['ated', 4], ['ates', 4], ['ate', 4], ['ers', 4], ['er', 4], ['ed', 3], ['ent', 4], ['ez', 4],
+    ['is', 4], ['es', 3], ['e', 3], ['s', 3]
+  ];
+  const STEM_CACHE = new Map();
+  function stem(word) {
+    let w = word;
+    if (STEM_CACHE.has(w)) return STEM_CACHE.get(w);
+    if (w.length >= 4 && !/^\d+$/.test(w)) {
+      for (let pass = 0; pass < 3; pass++) {
+        let changed = false;
+        for (const [suf, min] of SUFFIXES) {
+          if (w.endsWith(suf) && w.length - suf.length >= min && !(suf === 's' && /(ss|us)$/.test(w))) {
+            w = w.slice(0, -suf.length); changed = true; break;
+          }
+        }
+        // consonne finale doublée (scann → scan, committ → commit), radical ≥ 4
+        if (w.length >= 5 && w[w.length - 1] === w[w.length - 2] && /[b-df-hj-np-tv-z]/.test(w[w.length - 1])) w = w.slice(0, -1);
+        if (!changed) break;
+      }
+    }
+    if (STEM_CACHE.size > 5000) STEM_CACHE.clear();
+    STEM_CACHE.set(word, w);
+    return w;
+  }
+
+  /** Mots d'un texte avec leur position et leur radical. */
+  let tokCache = { text: null, toks: null };
+  function tokens(text) {
+    if (tokCache.text === text) return tokCache.toks;
+    const toks = [];
+    const re = /[\p{L}\p{N}]+/gu;
+    let m;
+    while ((m = re.exec(text))) toks.push({ start: m.index, end: m.index + m[0].length, s: stem(m[0]) });
+    tokCache = { text, toks };
+    return toks;
+  }
+
+  /**
+   * Correspondances par radicaux, mot à mot (locutions comprises : « looking for »
+   * trouve « look for »). Uniquement pour les termes faits de mots, espaces,
+   * apostrophes et tirets ; les mots doivent être contigus dans le texte.
+   */
+  // Participes passés employés comme adjectifs (« fichiers générés », « generated files ») :
+  // jamais lus comme un verbe d'action par radical (la correspondance exacte reste possible).
+  const PARTICIPLE = /(?:ees|es|ed)$/;
+  function findStem(n, term, verbal) {
+    if (!/^[\p{L}\p{N}\s'\-]+$/u.test(term)) return [];
+    const want = (term.match(/[\p{L}\p{N}]+/gu) || []).map(stem);
+    if (!want.length) return [];
+    const toks = tokens(n), out = [];
+    for (let i = 0; i + want.length <= toks.length; i++) {
+      let ok = true;
+      for (let k = 0; k < want.length && ok; k++) {
+        if (toks[i + k].s !== want[k]) ok = false;
+        else if (verbal && k === 0 && PARTICIPLE.test(n.slice(toks[i].start, toks[i].end)) && !PARTICIPLE.test(term.split(/[\s'\-]/)[0])) ok = false;
+        else if (k > 0 && !/^[\s'\-]+$/.test(n.slice(toks[i + k - 1].end, toks[i + k].start))) ok = false;
+      }
+      if (ok) out.push({ start: toks[i].start, end: toks[i + want.length - 1].end, stem: true });
+    }
+    return out;
+  }
+
+  /** Correspondances exactes (frontières de mots, pluriel en s) puis par radicaux. */
+  function matchTerm(n, term, verbal) {
+    const exact = findAll(n, term);
+    const st = findStem(n, term, verbal).filter(m => !exact.some(e => e.start === m.start));
+    return exact.concat(st);
+  }
+
+  const overlaps = (a, b) => a.start < b.end && b.start < a.end;
+  const overlapsAny = (span, spans) => spans.some(s => overlaps(span, s));
+
+  /**
+   * Meilleure correspondance parmi `terms` : la plus longue gagne,
+   * puis la plus à gauche. `exclude` : spans à ignorer.
+   */
+  function bestMatch(n, terms, exclude, exactOnly) {
+    let best = null;
+    for (const raw of terms) {
+      const t = normalize(raw);
+      for (const m of (exactOnly ? findAll(n, t) : matchTerm(n, t))) {
+        if (exclude && overlapsAny(m, exclude)) continue;
+        const len = m.end - m.start;
+        const exact = !m.stem;
+        if (!best || len > best.len || (len === best.len && (exact && !best.exact || (exact === best.exact && m.start < best.start)))) {
+          best = { term: t, raw, start: m.start, end: m.end, len, exact };
+        }
+      }
+    }
+    return best;
+  }
+
+  /** Toutes les occurrences non chevauchantes de `terms` (plus longue d'abord). */
+  function allMatches(n, terms) {
+    const hits = [];
+    for (const raw of terms) {
+      const t = normalize(raw);
+      for (const m of findAll(n, t)) hits.push({ start: m.start, end: m.end, term: t });
+    }
+    hits.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+    const out = [];
+    for (const h of hits) if (!out.length || h.start >= out[out.length - 1].end) out.push(h);
+    return out;
+  }
+
+  // ─── DSL : PARSE DES DÉFAUTS ───────────────────────────────────────────────
+  /** "OP[a, b=c]" → [{name:null,value:'a'},{name:'b',value:'c'}] */
+  function parseArgs(defaultDsl) {
+    const m = /\[(.*)\]/.exec(defaultDsl || '');
+    if (!m || !m[1].trim()) return [];
+    return m[1].split(',').map(s => s.trim()).filter(Boolean).map(s => {
+      const eq = s.indexOf('=');
+      return eq > 0 ? { name: s.slice(0, eq).trim(), value: s.slice(eq + 1).trim() }
+                    : { name: null, value: s };
+    });
+  }
+
+  const mods = db => db.modifiers || {};
+
+  // ─── TRANSPILATION ─────────────────────────────────────────────────────────
+  function bestShortcut(n, db) {
+    let best = null;
+    for (const [phrase, dsl] of Object.entries(db.shortcuts || {})) {
+      const m = bestMatch(n, [phrase]);
+      if (m && (!best || m.len > best.len)) best = { phrase, dsl, start: m.start, end: m.end, len: m.len };
+    }
+    return best;
+  }
+
+  function detectParams(n, op) {
+    const params = {}, spans = [];
+    for (const [pname, vals] of Object.entries(op.params || {})) {
+      let best = null;
+      for (const [val, triggers] of Object.entries(vals || {})) {
+        const m = bestMatch(n, triggers || []);
+        if (m && (!best || m.len > best.m.len)) best = { val, m };
+      }
+      if (best) { params[pname] = best.val; spans.push(best.m); }
+    }
+    return { params, spans };
+  }
+
+  /** Ordre entre deux correspondances d'un même opérateur (négatif = a meilleur). */
+  function cmpMatch(a, b) {
+    return (b.words - a.words) || (b.evidence - a.evidence) || (b.exact - a.exact) || (b.len - a.len) || (a.start - b.start);
+  }
+
+  /** Classement des opérateurs candidats d'un segment. */
+  function rankOperators(n, db, exclude) {
+    const closeSpans = allMatches(n, mods(db)[MOD.CLOSE] || []);
+    const cands = [];
+    for (const op of db.operators || []) {
+      const det = detectParams(n, op);
+      // preuve = paramètres reconnus hors du mot déclencheur lui-même (R2)
+      const ev = m => det.spans.filter(sp => !overlaps(sp, m)).length;
+      let best = null;
+      for (const raw of op.triggers || []) {
+        const t = normalize(raw);
+        const words = t.split(' ').length;
+        for (const m of matchTerm(n, t, true)) {
+          const len = m.end - m.start;
+          if (!m.stem && len > t.length && /es$/.test(n.slice(m.start, m.end))) continue;
+          // une phrase de clôture plus longue (« archive la session ») l'emporte
+          if (closeSpans.some(c => overlaps(c, m) && (c.end - c.start) > len)) continue;
+          if (exclude && overlapsAny(m, exclude)) continue;
+          const cand = { start: m.start, end: m.end, len, term: t, words, exact: !m.stem };
+          cand.evidence = ev(cand);
+          if (!best || cmpMatch(cand, best) < 0) best = cand;
+        }
+      }
+      // R2 : un paramètre porté par le mot déclencheur lui-même (« tests » pour
+      // VALIDATE) n'est pas une preuve supplémentaire.
+      if (best) cands.push({ op, match: best, evidence: best.evidence, det });
+    }
+    // locution multi-mots > paramètres reconnus (hors mot déclencheur) > correspondance
+    // exacte plutôt que par radical > trigger le plus long > position (verbe en tête) > priorité
+    cands.sort((a, b) =>
+      b.match.words - a.match.words ||
+      b.evidence - a.evidence ||
+      (b.match.exact - a.match.exact) ||
+      b.match.len - a.match.len ||
+      a.match.start - b.match.start ||
+      (b.op.priority || 0) - (a.op.priority || 0));
+    return { cands, closeSpans };
+  }
+
+  function transpileSegment(seg, db, ctx, opts) {
+    const n = seg;
+    const warnings = ctx.warnings;
+    if (!opts || !opts.requireOp) {
+      const sc = bestShortcut(n, db);
+      if (sc) { ctx.sources.add('shortcut'); ctx.ops.push(...opIds(sc.dsl, db)); ctx.meta = { op: null, match: sc, paramSpans: [] }; return sc.dsl; }
+    }
+    let { cands, closeSpans } = rankOperators(n, db, opts && opts.negative ? negativeSpans(n) : null);
+    if (!cands.length && opts && opts.negative) {
+      // R4 : la condition ne se rattache qu'au mot d'échec (« échoue » → DEBUG)
+      ({ cands, closeSpans } = rankOperators(n, db));
+      if (cands.length) warnings.push(`condition négative rattachée à ${cands[0].op.id} par le mot d'échec : vérifier que la garde ne devait pas être une vérification (« ${seg} »)`);
+    }
+    if (!cands.length) {
+      if (closeSpans.length && !(opts && opts.requireOp)) { ctx.sources.add('rules'); return '⊜'; }
+      return null;
+    }
+    const { op, match, det } = cands[0];
+    const { params, spans: paramSpans } = det;
+    const taken = [match, ...paramSpans];
+
+    // modificateurs = mots-outils : correspondance exacte uniquement (« toutes » ≠ « tout »)
+    const hit = name => bestMatch(n, mods(db)[name] || [], taken, true);
+    const maxHit = hit(MOD.MAX);
+    const storeHit = hit(MOD.STORE);
+    const closeHit = closeSpans.find(c => !overlapsAny(c, taken));
+    let outHit = null;
+    for (const [type, triggers] of Object.entries(db.output_types || {})) {
+      const m = bestMatch(n, triggers || [], taken, true);
+      if (m && (!outHit || m.len > outHit.m.len)) outHit = { type, m };
+    }
+
+    // Arguments : défaut de l'opérateur, puis paramètres détectés.
+    const args = parseArgs(op.default);
+    const bind = op.bind || {};
+    const sig = op.signature || [];
+    const setArg = (name, value) => {
+      const a = args.find(x => x.name === name);
+      if (a) a.value = value; else args.push({ name, value });
+    };
+    // placeholders positionnels "@param" (ex. APPLY[@skill, ◈])
+    for (let i = args.length - 1; i >= 0; i--) {
+      const a = args[i];
+      if (!a.name && /^@/.test(a.value) && (op.params || {})[a.value.slice(1)]) {
+        const pname = a.value.slice(1);
+        if (params[pname]) { a.value = params[pname]; delete params[pname]; }
+        else args.splice(i, 1);
+      }
+    }
+    for (const pname of Object.keys(op.params || {})) {
+      if (params[pname] != null) setArg(bind[pname] || pname, params[pname]);
+    }
+    if (sig.includes('n')) {
+      const num = NUM_RE.exec(n);
+      if (num) setArg('n', num[1]);
+    }
+    const absorbed = [...paramSpans];
+    if (sig.includes('op')) {
+      const inner = cands.find(c => c.op.id !== op.id);
+      if (inner) { setArg('op', inner.op.id); absorbed.push(inner.match); ctx.ops.push(inner.op.id); }
+    }
+    if (n.includes('⌒')) {
+      const skillArg = args.find(a => /^@/.test(a.value));
+      if (skillArg) { if (!skillArg.value.endsWith('⌒')) skillArg.value += '⌒'; }
+      else warnings.push('lazy load (⌒) ignoré : aucun pointeur de skill dans « ' + seg + ' »');
+    }
+    if (maxHit && !args.some(a => a.value === '▲')) args.push({ name: null, value: '▲' });
+
+    let dsl = `${op.id}[${args.map(a => a.name ? `${a.name}=${a.value}` : a.value).join(', ')}]`;
+    if (storeHit) dsl += ` → §${++ctx.anchor}`;
+    else if (outHit) dsl += ` → ${outHit.type}`;
+    if (closeHit) dsl += ' ⟶ ⊜';
+
+    ctx.sources.add('rules');
+    ctx.ops.push(op.id);
+    ctx.meta = { op: op.id, match, paramSpans: absorbed };
+    return dsl;
+  }
+
+  function opIds(dsl, db) {
+    const ids = new Set((db.operators || []).map(o => o.id));
+    return (String(dsl).match(/\b[A-Z]+(?=\[)/g) || []).filter(x => ids.has(x));
+  }
+
+  const isBlank = s => !s || !/[\p{L}\p{N}◈⊜⌒▲§]/u.test(s);
+
+  const subCtx = (ctx, anchor) => ({ ...ctx, warnings: [], ops: [], sources: new Set(), anchor: anchor == null ? ctx.anchor : anchor, meta: null, lost: false });
+  function mergeCtx(ctx, sub) {
+    ctx.warnings.push(...sub.warnings); ctx.ops.push(...sub.ops);
+    sub.sources.forEach(x => ctx.sources.add(x)); ctx.anchor = sub.anchor;
+    if (sub.lost) ctx.lost = true;
+    if (sub.structured) ctx.structured = true;
+  }
+
+  /**
+   * R5 — « , / et / and » comme séparateurs souples. Le segment est découpé en
+   * clauses ; une clause sans opérateur se rattache à la précédente (« nom, email
+   * et mot de passe »), deux clauses voisines du même opérateur fusionnent
+   * (« compile and ship »). On ne coupe que s'il reste plusieurs groupes à opérateurs
+   * distincts dont le verbe n'est pas un paramètre de l'opérateur principal
+   * (« copie et adapte » reste CLONE[adapt=oui]). Une clause sans opérateur
+   * introduite par « et / and » est signalée.
+   * @returns {string[]|null} les DSL des groupes, ou null si pas de coupe
+   */
+  function splitCoordination(seg, db, ctx, opts) {
+    let markers = allMatches(seg, SOFT_MARKERS);
+    if (!markers.length) return null;
+    const sc = bestShortcut(seg, db);
+    if (sc) markers = markers.filter(m => !overlaps(m, sc));
+    if (!markers.length) return null;
+    const whole = subCtx(ctx);
+    transpileSegment(seg, db, whole, opts);
+    const absorbed = whole.meta ? whole.meta.paramSpans : [];
+
+    // clauses et leur opérateur (analyse d'essai, sans effet sur ctx)
+    const clauses = [];
+    let pos = 0, prevMarker = null;
+    for (const m of [...markers, null]) {
+      const end = m ? m.start : seg.length;
+      clauses.push({ start: pos, end, text: seg.slice(pos, end).trim(), marker: prevMarker });
+      if (m) { pos = m.end; prevMarker = m.term; }
+    }
+    for (const c of clauses) {
+      const sub = subCtx(ctx);
+      const d = isBlank(c.text) ? null : transpileSegment(c.text, db, sub, opts);
+      const lead = seg.slice(c.start, c.end).length - seg.slice(c.start, c.end).trimStart().length;
+      c.op = d && d !== '⊜' ? sub.ops.join(',') : null;
+      c.span = sub.meta && sub.meta.match ? { start: sub.meta.match.start + c.start + lead, end: sub.meta.match.end + c.start + lead } : null;
+      c.absorbed = c.op && c.span && overlapsAny(c.span, absorbed);
+    }
+    // regroupement
+    const groups = [];
+    for (const c of clauses) {
+      const g = groups[groups.length - 1];
+      const startsGroup = c.op && !c.absorbed && (!g || g.op !== c.op);
+      if (startsGroup || !g) groups.push({ start: c.start, end: c.end, op: c.op && !c.absorbed ? c.op : null });
+      else { g.end = c.end; if (!g.op && c.op && !c.absorbed) g.op = c.op; }
+    }
+    const opGroups = groups.filter(g => g.op);
+    if (opGroups.length > 1 && groups.every(g => g.op)) {
+      const out = [];
+      for (const g of groups) {
+        const text = seg.slice(g.start, g.end).replace(/^[\s,]+|[\s,]+$/g, '').replace(/^(et|and)\s+/, '');
+        const d = transpileSegment(text, db, ctx, opts);
+        if (d) out.push(d);
+      }
+      return out;
+    }
+    for (const c of clauses) {
+      if (!c.op && c.marker && AND_MARKERS.includes(c.marker) && !isBlank(c.text)) {
+        ctx.warnings.push(`clause « ${c.text} » sans opérateur après « ${c.marker} » : rattachée à l'instruction voisine — vérifier qu'aucune action n'est perdue`);
+      }
+    }
+    return null;
+  }
+
+  /** Séquence A ⟶ B ⟶ C (découpage sur les marqueurs de pipe). */
+  function parseSequence(n, db, ctx, opts) {
+    if (isBlank(n)) return null;
+    let markers = allMatches(n, [...(mods(db)[MOD.PIPE] || []), ...BUILTIN_PIPE]);
+    const whole = (!opts || !opts.requireOp) ? bestShortcut(n, db) : null;
+    if (whole) markers = markers.filter(m => !overlaps(m, whole));
+    const segs = [];
+    let pos = 0;
+    for (const m of markers) { segs.push(n.slice(pos, m.start)); pos = m.end; }
+    segs.push(n.slice(pos));
+    const parts = [];
+    const snap = () => ({ ops: ctx.ops.length, anchor: ctx.anchor, warnings: ctx.warnings.length });
+    const restore = st => { ctx.ops.length = st.ops; ctx.anchor = st.anchor; ctx.warnings.length = st.warnings; };
+    let last = null;   // { text, snap, count } : dernier segment émis
+    for (const s of segs) {
+      const seg = s.trim();
+      if (isBlank(seg)) continue;
+      const before = snap(), n0 = parts.length;
+      const split = splitCoordination(seg, db, ctx, opts);
+      if (split) { parts.push(...split); last = { text: seg, snap: before, count: parts.length - n0 }; continue; }
+      const d = transpileSegment(seg, db, ctx, opts);
+      if (d) { parts.push(d); last = { text: seg, snap: before, count: 1 }; continue; }
+      const prev = parts.length - 1;
+      if (prev >= 0 && bestMatch(seg, mods(db)[MOD.STORE] || [], null, true) && !/→ [^⟶]*$/.test(parts[prev])) {
+        parts[prev] += ` → §${++ctx.anchor}`;          // « … puis stocke le résultat »
+        continue;
+      }
+      if (last) {
+        // marqueur adverbial (« ajoute ensuite un système de logs ») : le segment sans
+        // opérateur complète l'étape précédente, qui est réanalysée avec lui
+        const merged = last.text + ' ' + seg;
+        const saved = { parts: parts.splice(parts.length - last.count), state: snap() };
+        restore(last.snap);
+        const d2 = transpileSegment(merged, db, ctx, opts);
+        if (d2) { parts.push(d2); last = { text: merged, snap: last.snap, count: 1 }; continue; }
+        parts.push(...saved.parts); restore(saved.state);
+      }
+      ctx.warnings.push('segment non reconnu, ignoré : « ' + seg + ' »');
+      ctx.lost = true;
+    }
+    if (opts && opts.requireOp && !parts.some(p => p !== '⊜')) return null;
+    return parts.length ? parts.join(' ⟶ ') : null;
+  }
+
+  /** Phrases (« . » suivi d'un espace) : chacune est une expression, jointes par ⟶. */
+  function parseSentences(n, db, ctx) {
+    const sentences = n.split(/(?<=[.!])\s+/).map(x => x.replace(/[.!]+$/, '').trim()).filter(x => !isBlank(x));
+    if (sentences.length < 2) return parseExpr(n.replace(/[.!]+$/, ''), db, ctx);
+    const parts = sentences.map(x => parseExpr(x, db, ctx)).filter(Boolean);
+    // « ? » lie moins fort que « ⟶ » : dès qu'une phrase est conditionnelle, chaque
+    // phrase devient une instruction sur sa propre ligne (exécutées dans l'ordre),
+    // sinon « C ? X ⟶ S2 » ferait dépendre S2 de C.
+    if (!parts.length) return null;
+    return parts.some(x => / \? /.test(x)) ? parts.join('\n') : parts.join(' ⟶ ');
+  }
+
+  /** Expression complète : conditionnels (si … alors … sinon …) puis séquences. */
+  function parseExpr(n, db, ctx) {
+    const elseHit = allMatches(n, mods(db)[MOD.ELSE] || [])[0];
+    const condTerms = mods(db)[MOD.COND] || [];
+
+    const splitCond = text => {
+      const c = allMatches(text, condTerms)[0];
+      if (!c) return { X: text, C: '' };
+      const before = text.slice(0, c.start), after = text.slice(c.end);
+      if (isBlank(before)) {
+        const t = allMatches(after, THEN_MARKERS)[0];
+        if (t) return { C: after.slice(0, t.start), X: after.slice(t.end) };
+        // « si tout est vert déploie » : la condition s'arrête au verbe d'action
+        const { cands } = rankOperators(after, db);
+        const first = cands.map(c => c.match.start).filter(p => p > 0 && !isBlank(after.slice(0, p))).sort((a, b) => a - b)[0];
+        return first != null ? { C: after.slice(0, first), X: after.slice(first) } : { C: after, X: '' };
+      }
+      return { X: before, C: after };
+    };
+    // la condition est un essai : ses avertissements ne sont fusionnés que si elle est retenue
+    const parseCond = C => {
+      const sub = subCtx(ctx);
+      const Cd = isBlank(C) ? null : parseSequence(C.trim(), db, sub, { requireOp: true, negative: isNegative(C) });
+      if (Cd) mergeCtx(ctx, sub);
+      return Cd;
+    };
+
+    if (elseHit) {
+      const L = n.slice(0, elseHit.start), R = n.slice(elseHit.end);
+      const { X, C } = splitCond(L);
+      const Cd = parseCond(C);
+      const Xd = parseSequence(X.trim(), db, ctx);
+      const Rd = parseSequence(R.trim(), db, ctx);
+      ctx.structured = true;
+      if (Cd) return isNegative(C)
+        ? `${Cd} ? ${Rd || '∅'} : ${Xd || '∅'}`
+        : `${Cd} ? ${Xd || '∅'} : ${Rd || '∅'}`;
+      if (!isBlank(C)) ctx.warnings.push(`condition « ${C.trim()} » sans opérateur : ${Xd ? 'l\'action principale sert de condition (X ? ∅ : sinon)' : 'ignorée'}`);
+      if (Xd && Rd) return `${Xd} ? ∅ : ${Rd}`;
+      if (!Xd || !Rd) { ctx.warnings.push('conditionnel incomplet : une branche n\'a pas d\'opérateur'); ctx.lost = true; }
+      return Xd || Rd;
+    }
+
+    const c = allMatches(n, condTerms)[0];
+    if (c) {
+      const head = n.slice(0, c.start);
+      const conn = /(?:^|[\s,;])(?:et|and|puis|then|ensuite)\s*$|[,;]\s*$/.exec(head);
+      if (conn && !isBlank(head.slice(0, conn.index))) {
+        const pre = parseSequence(head.slice(0, conn.index).trim(), db, ctx);
+        const post = parseExpr(n.slice(c.start), db, ctx);
+        if (pre && post) return `${pre} ⟶ ${post}`;
+        return pre || post;
+      }
+      const { X, C } = splitCond(n);
+      const Cd = parseCond(C);
+      if (Cd) {
+        const sub = subCtx(ctx);
+        const Xd = isBlank(X) ? null : parseSequence(X.trim(), db, sub);
+        if (Xd) {
+          mergeCtx(ctx, sub);
+          ctx.structured = true;
+          return isNegative(C) ? `${Cd} ? ∅ : ${Xd}` : `${Cd} ? ${Xd}`;
+        }
+        // R1 : action introuvable → rien d'exécutable ; on ne rend pas la condition seule
+        ctx.warnings.push(`conditionnel incomplet : action « ${X.trim()} » non reconnue — l'instruction est perdue (condition : ${Cd})`);
+        ctx.lost = true;
+        return null;
+      }
+      if (!isBlank(C) && !isBlank(X)) {
+        // R1 : condition introuvable → l'action est conservée, la garde perdue est signalée
+        const Xd = parseSequence(X.trim(), db, ctx);
+        if (Xd) {
+          ctx.warnings.push(`conditionnel incomplet : condition « ${C.trim()} » non reconnue — l'action est émise SANS garde`);
+          ctx.lost = true;
+          return Xd;
+        }
+      }
+    }
+    return parseSequence(n, db, ctx);
+  }
+
+  /**
+   * prose → DSL.
+   * @returns {{dsl:string|null, source:'shortcut'|'rules'|null, ops:string[], warnings:string[], complete:boolean}}
+   *   complete === false si une partie de l'instruction a été perdue (segment ignoré,
+   *   conditionnel incomplet) ; les avertissements disent laquelle.
+   *   source === 'shortcut' uniquement si tout le DSL provient de raccourcis (aucune règle).
+   */
+  function transpile(input, db) {
+    const ctx = { anchor: 0, warnings: [], ops: [], sources: new Set(), structured: false, lost: false, meta: null };
+    let n = normalize(input);
+    // ⌒ : les phrases lazy-load sont réduites au symbole (évite que « si besoin »
+    // soit lu comme un conditionnel).
+    for (const m of allMatches(n, mods(db)[MOD.LAZY] || []).reverse()) {
+      n = n.slice(0, m.start) + ' ⌒ ' + n.slice(m.end);
+    }
+    for (const m of allMatches(n, SOFTENERS).reverse()) n = n.slice(0, m.start) + ' ' + n.slice(m.end);
+    n = n.replace(/\s+/g, ' ').trim();
+    const dsl = isBlank(n) ? null : parseSentences(n, db, ctx);
+    const source = !dsl ? null
+      : (ctx.sources.size === 1 && ctx.sources.has('shortcut') && !ctx.structured ? 'shortcut' : 'rules');
+    return { dsl, source, ops: ctx.ops, warnings: [...new Set(ctx.warnings)], complete: !!dsl && !ctx.lost };
+  }
+
+  // ─── VALIDATION DU DSL ─────────────────────────────────────────────────────
+  /**
+   * Vérifie un DSL contre la grammaire SPC et les schémas d'opérateurs de `db`.
+   * Grammaire :
+   *   prog  := expr ( ⏎ expr )*        une instruction par ligne, exécutées dans l'ordre
+   *   expr  := decl* cond
+   *   decl  := @skill(::mod)?⌒
+   *   cond  := seq ( '?' seq ( ':' seq )? )?
+   *   seq   := term ( '⟶' term )*
+   *   term  := ( OP '[' args? ']' ('↻' N)? | '⊜' | '∅' ) ( '→' (TYPE | §N) )?
+   */
+  function validateDSL(dsl, db) {
+    const lines = String(dsl || '').split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length > 1) {
+      const errors = [];
+      lines.forEach((l, k) => {
+        if (/^(@[\p{L}\p{N}_\-]+(?:::[\p{L}\p{N}_\-]+)?⌒\s*)+$/u.test(l)) return;   // ligne de déclarations
+        const r = validateLine(l, db);
+        errors.push(...r.errors.map(e => `ligne ${k + 1} : ${e}`));
+      });
+      return { ok: errors.length === 0, errors };
+    }
+    return validateLine(lines[0] || '', db);
+  }
+
+  function validateLine(dsl, db) {
+    const errors = [];
+    const ops = new Map((db.operators || []).map(o => [o.id, o]));
+    const outputs = new Set(Object.keys(db.output_types || {}));
+    let s = String(dsl || '').trim();
+    if (!s) return { ok: false, errors: ['DSL vide'] };
+
+    // déclarations de skills en tête (lazy load)
+    while (true) {
+      const m = /^@[\p{L}\p{N}_\-]+(?:::[\p{L}\p{N}_\-]+)?⌒\s+/u.exec(s);
+      if (!m) break;
+      s = s.slice(m[0].length);
+    }
+
+    let i = 0;
+    const ws = () => { while (i < s.length && /\s/.test(s[i])) i++; };
+    const peek = str => { ws(); return s.startsWith(str, i); };
+    const eat = str => { if (peek(str)) { i += str.length; return true; } return false; };
+    const fail = msg => { errors.push(`${msg} (position ${i})`); throw new Error('stop'); };
+
+    function term() {
+      ws();
+      if (eat('⊜') || eat('∅')) { /* instruction nue */ }
+      else {
+        const m = /^[A-Z][A-Z_]*/.exec(s.slice(i));
+        if (!m) fail(`opérateur attendu, trouvé « ${s.slice(i, i + 12)} »`);
+        const id = m[0]; i += id.length;
+        const op = ops.get(id);
+        if (!op) fail(`opérateur inconnu « ${id} »`);
+        if (!eat('[')) fail(`« [ » attendu après ${id}`);
+        const close = s.indexOf(']', i);
+        if (close === -1) fail(`« ] » manquant pour ${id}`);
+        const inner = s.slice(i, close);
+        if (inner.includes('[')) fail(`crochets imbriqués dans ${id}`);
+        i = close + 1;
+        checkArgs(op, inner);
+        if (eat('↻')) { const k = /^\d+/.exec(s.slice(i)); if (!k) fail('nombre attendu après ↻'); i += k[0].length; }
+      }
+      if (eat('→')) {
+        ws();
+        const m = /^(§\d+|[\p{L}\p{N}_\-]+)/u.exec(s.slice(i));
+        if (!m) fail('cible attendue après →');
+        if (!m[1].startsWith('§') && !outputs.has(m[1])) errors.push(`type de sortie inconnu « ${m[1]} »`);
+        i += m[1].length;
+      }
+    }
+    function seq() { term(); while (eat('⟶')) term(); }
+    function checkArgs(op, inner) {
+      const sig = new Set(op.signature || []);
+      const params = op.params || {};
+      const parts = inner.split(',').map(x => x.trim());
+      if (inner.trim() === '') return;
+      for (const a of parts) {
+        if (!a) { errors.push(`${op.id} : argument vide`); continue; }
+        const eq = a.indexOf('=');
+        if (eq > 0) {
+          const name = a.slice(0, eq).trim(), value = a.slice(eq + 1).trim();
+          if (!value) { errors.push(`${op.id} : valeur manquante pour ${name}`); continue; }
+          if (!sig.has(name) && !params[name]) { errors.push(`${op.id} : paramètre inconnu « ${name} »`); continue; }
+          const en = params[name];
+          if (en && Object.keys(en).length) {
+            const base = value.replace(/⌒$/, '').replace(/::.*$/, '');
+            if (!(value in en) && !(base in en)) errors.push(`${op.id} : ${name}=${value} hors énumération (${Object.keys(en).join(', ')})`);
+          } else if (name === 'op') {
+            if (!ops.has(value)) errors.push(`${op.id} : op=${value} n'est pas un opérateur`);
+          } else if (name === 'n') {
+            if (!/^\d+$/.test(value)) errors.push(`${op.id} : n=${value} doit être un entier`);
+          }
+        } else if (REF_RE.test(a) || NEG_RE.test(a)) {
+          /* symbole positionnel */
+        } else if (SKILL_RE.test(a)) {
+          const en = params.skill;
+          const base = a.replace(/⌒$/, '').replace(/::.*$/, '');
+          if (!sig.has('skill')) errors.push(`${op.id} : pointeur de skill non admis`);
+          else if (en && !(base in en)) errors.push(`${op.id} : skill ${a} hors énumération (${Object.keys(en).join(', ')})`);
+        } else {
+          errors.push(`${op.id} : argument positionnel invalide « ${a} »`);
+        }
+      }
+    }
+    try {
+      seq();
+      if (eat('?')) { seq(); if (eat(':')) seq(); }
+      ws();
+      if (i < s.length) fail(`texte inattendu « ${s.slice(i, i + 16)} »`);
+    } catch (e) { if (e.message !== 'stop') throw e; }
+    return { ok: errors.length === 0, errors };
+  }
+
+  // ─── LECTURE STRUCTURÉE D'UN DSL ───────────────────────────────────────────
+  /**
+   * DSL → étapes dans l'ordre de lecture.
+   *   { op, args: {nom: valeur}, positional: [], line, role, onFailure, guardedBy: [op] }
+   * role : 'seq' (hors conditionnel) | 'cond' | 'then' (si la condition réussit) | 'else'.
+   * onFailure : l'étape ne s'exécute que si la condition échoue (branche « : »).
+   */
+  function parseSteps(dsl) {
+    const steps = [];
+    String(dsl || '').split('\n').forEach((line, li) => {
+      // découpe top-level sur « ? » et « : » hors crochets
+      let depth = 0, q = -1, c = -1;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '[') depth++;
+        else if (ch === ']') depth--;
+        else if (depth === 0 && ch === '?' && q < 0) q = i;
+        else if (depth === 0 && ch === ':' && q >= 0 && c < 0 && line[i + 1] !== ':' && line[i - 1] !== ':') c = i;
+      }
+      const zones = q < 0 ? [[line, 'seq']]
+        : [[line.slice(0, q), 'cond'], [line.slice(q + 1, c < 0 ? line.length : c), 'then'], ...(c < 0 ? [] : [[line.slice(c + 1), 'else']])];
+      const condOps = [];
+      for (const [text, role] of zones) {
+        for (const m of text.matchAll(/\b([A-Z][A-Z_]*)\[([^\]]*)\]/g)) {
+          const args = {}, positional = [];
+          for (const a of m[2].split(',').map(x => x.trim()).filter(Boolean)) {
+            const eq = a.indexOf('=');
+            if (eq > 0) args[a.slice(0, eq).trim()] = a.slice(eq + 1).trim(); else positional.push(a);
+          }
+          if (role === 'cond') condOps.push(m[1]);
+          steps.push({ op: m[1], args, positional, line: li, role, onFailure: role === 'else',
+            guardedBy: role === 'then' || role === 'else' ? condOps.slice() : [] });
+        }
+      }
+    });
+    return steps;
+  }
+
+  // ─── VALIDATION DE LA BDD ──────────────────────────────────────────────────
+  const isStrArr = a => Array.isArray(a) && a.every(x => typeof x === 'string');
+  const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
+
+  /** Erreurs structurelles (la BDD est-elle utilisable ?). */
+  function checkDBStructure(db) {
+    const e = [];
+    if (!isObj(db)) return ['la racine doit être un objet JSON'];
+    if (typeof db.version !== 'string') e.push('« version » (chaîne) manquante');
+    if (!Array.isArray(db.operators) || !db.operators.length) e.push('« operators » doit être un tableau non vide');
+    else {
+      const seen = new Set();
+      db.operators.forEach((o, k) => {
+        const w = `operators[${k}]`;
+        if (!isObj(o)) { e.push(`${w} n'est pas un objet`); return; }
+        if (typeof o.id !== 'string' || !/^[A-Z][A-Z_]*$/.test(o.id)) e.push(`${w}.id invalide`);
+        else if (seen.has(o.id)) e.push(`opérateur en double : ${o.id}`); else seen.add(o.id);
+        if (!isStrArr(o.triggers)) e.push(`${w}.triggers doit être un tableau de chaînes`);
+        if (typeof o.default !== 'string' || !o.default.startsWith(o.id + '[')) e.push(`${w}.default doit commencer par « ${o.id}[ »`);
+        if (o.params != null && !isObj(o.params)) e.push(`${w}.params doit être un objet`);
+        else for (const [p, vals] of Object.entries(o.params || {})) {
+          if (!isObj(vals)) { e.push(`${w}.params.${p} doit être un objet`); continue; }
+          for (const [v, t] of Object.entries(vals)) if (!isStrArr(t)) e.push(`${w}.params.${p}.${v} doit être un tableau de chaînes`);
+        }
+        if (o.signature != null && !isStrArr(o.signature)) e.push(`${w}.signature doit être un tableau de chaînes`);
+        if (o.priority != null && typeof o.priority !== 'number') e.push(`${w}.priority doit être un nombre`);
+      });
+    }
+    for (const key of ['modifiers', 'output_types']) {
+      if (!isObj(db[key])) { e.push(`« ${key} » doit être un objet`); continue; }
+      for (const [k, v] of Object.entries(db[key])) if (!isStrArr(v)) e.push(`${key}.${k} doit être un tableau de chaînes`);
+    }
+    if (!isObj(db.shortcuts)) e.push('« shortcuts » doit être un objet');
+    else for (const [k, v] of Object.entries(db.shortcuts)) if (typeof v !== 'string') e.push(`shortcuts["${k}"] doit être une chaîne`);
+    return e;
+  }
+
+  function assertDB(db) {
+    const e = checkDBStructure(db);
+    if (e.length) { const err = new Error('Base de règles invalide :\n- ' + e.join('\n- ')); err.details = e; throw err; }
+    return db;
+  }
+
+  /** Contrôles sémantiques : DSL des raccourcis et défauts, collisions de déclencheurs. */
+  function lintDB(db) {
+    const errors = [], warnings = [];
+    for (const o of db.operators) {
+      // placeholders "@param" du défaut (ex. APPLY[@skill, ◈]) : remplacés par une valeur admise
+      const def = o.default.replace(/@([\p{L}_]+)/gu, (m, p) =>
+        (o.params || {})[p] && Object.keys(o.params[p])[0] ? Object.keys(o.params[p])[0] : m);
+      const r = validateDSL(def, db);
+      if (!r.ok) errors.push(`défaut de ${o.id} : ${r.errors.join(' ; ')}`);
+    }
+    for (const [phrase, dsl] of Object.entries(db.shortcuts)) {
+      const r = validateDSL(dsl, db);
+      if (!r.ok) errors.push(`raccourci « ${phrase} » → ${dsl} : ${r.errors.join(' ; ')}`);
+    }
+    const owner = new Map();
+    for (const o of db.operators) {
+      const local = new Set();
+      for (const t of o.triggers) {
+        const k = normalize(t);
+        if (local.has(k)) errors.push(`déclencheur en double dans ${o.id} : « ${t} »`);
+        local.add(k);
+        if (owner.has(k) && owner.get(k) !== o.id) errors.push(`déclencheur partagé par ${owner.get(k)} et ${o.id} : « ${t} »`);
+        else owner.set(k, o.id);
+      }
+    }
+    // collisions après racinisation (« compile » / « compilation » dans deux opérateurs)
+    const stemOwner = new Map();
+    for (const o of db.operators) for (const t of o.triggers) {
+      const k = normalize(t);
+      if (!/^[\p{L}\p{N}\s'\-]+$/u.test(k)) continue;
+      const sk = (k.match(/[\p{L}\p{N}]+/gu) || []).map(stem).join(' ');
+      const prev = stemOwner.get(sk);
+      if (prev && prev.id !== o.id) errors.push(`déclencheurs de même radical « ${sk} » dans ${prev.id} (« ${prev.t} ») et ${o.id} (« ${t} »)`);
+      else stemOwner.set(sk, { id: o.id, t });
+    }
+    const scKeys = new Map();
+    for (const p of Object.keys(db.shortcuts)) {
+      const k = normalize(p);
+      if (scKeys.has(k)) warnings.push(`raccourcis équivalents après normalisation : « ${scKeys.get(k)} » / « ${p} »`);
+      scKeys.set(k, p);
+    }
+    for (const name of Object.values(MOD)) if (!(db.modifiers || {})[name]) warnings.push(`modificateur réservé absent : ${name}`);
+    return { errors, warnings };
+  }
+
+  // ─── ESTIMATION DE TOKENS ──────────────────────────────────────────────────
+  /**
+   * Estimation locale, identique dans tous les modes (jamais les chiffres
+   * déclarés par un modèle). Calibrée sur cl100k (voir bench.js, erreur moyenne
+   * mesurée dans BENCH.md) : un mot ASCII ≈ 1 token par tranche de 8 caractères,
+   * une lettre accentuée ≈ +1, une ponctuation ASCII = 1, un symbole non ASCII
+   * ≈ 1 token par octet UTF-8 au-delà du premier.
+   */
+  function estimateTokens(text) {
+    const s = String(text || '');
+    let t = 0;
+    const re = /[\p{L}\p{N}_]+|\s+|[^\s\p{L}\p{N}_]/gu;
+    let m;
+    while ((m = re.exec(s))) {
+      const p = m[0];
+      if (/^\s+$/.test(p)) continue;
+      if (/^[\p{L}\p{N}_]+$/u.test(p)) {
+        const ascii = p.replace(/[^\x00-\x7f]/g, '');
+        t += Math.max(1, Math.ceil(ascii.length / 8)) + (p.length - ascii.length);
+      } else if (p.charCodeAt(0) < 128) {
+        t += 1;
+      } else {
+        const bytes = new TextEncoder().encode(p).length;
+        t += Math.max(1, bytes - 1);
+      }
+    }
+    return t;
+  }
+
+  // ─── IA LOCALE ─────────────────────────────────────────────────────────────
+  function buildSystemPrompt(db) {
+    const ops = db.operators.map(o => {
+      const ps = Object.entries(o.params || {}).map(([p, v]) => `${p}=${Object.keys(v).join('|')}`);
+      return `${o.id}(${(o.signature || []).join(',')})${ps.length ? ' ' + ps.join(' ') : ''}`;
+    }).join('\n  ');
+    const effects = db.modifier_effects || {};
+    const modifiers = Object.entries(db.modifiers || {})
+      .map(([name, triggers]) => `${name}(${triggers.slice(0, 3).join('/')}) ${effects[name] || ''}`.trim())
+      .join('\n  ');
+    const outputs = Object.entries(db.output_types || {})
+      .map(([type, triggers]) => `${type}(${triggers.slice(0, 2).join('/')})`).join(' ');
+
+    return `Tu es un transpileur DSL SPC (Symbolic Prompt Compression).
+Convertis l'instruction en langage naturel (français ou anglais) vers le DSL SPC.
+N'utilise QUE les opérateurs, paramètres et valeurs listés.
+
+OPÉRATEURS (signature, valeurs admises):
+  ${ops}
+
+MODIFICATEURS:
+  ${modifiers}
+
+TYPES DE SORTIE (après →): ${outputs}
+
+SYMBOLES: ◈=input courant §N=ancre ?=conditionnel *=wildcard ▲=max ⊘x=exclure x ↻=répéter ⟶=pipe ⊜=clôture ◊=output précédent ⌒=lazy load ∅=ne rien faire
+SYNTAXE: OP[arg, param=val] → TYPE | A ⟶ B | A ? B : C
+
+EXEMPLES:
+"analyze this code in depth" → {"dsl":"ANALYZE[◈, ▲]","explication":"analyse profonde"}
+"add error handling to all functions" → {"dsl":"ADD[target=*, what=error-handling]","explication":"injecte la gestion d'erreurs partout"}
+"find all usages of this function" → {"dsl":"FIND[input=*, type=usage, pattern=◈]","explication":"recherche des utilisations"}
+"validate all tests, otherwise debug" → {"dsl":"VALIDATE[*, scope=tests] ? ∅ : DEBUG[*, focus=error]","explication":"valide, sinon débogue"}
+"fix the bug then deploy to staging" → {"dsl":"DEBUG[◈, focus=error] ⟶ DEPLOY[◈, env=staging]","explication":"corrige puis déploie"}
+
+RÈGLE CRITIQUE: JSON strict uniquement, rien avant ni après.
+FORMAT EXACT: {"dsl":"...","explication":"..."}`;
+  }
+
+  /** Parse tolérant (fences, guillemets typographiques, clés non citées, virgules finales, prose autour). */
+  function parseJSONTolerant(candidate, db) {
+    const txt = String(candidate || '').trim();
+    if (!txt) throw new Error('Réponse JSON vide.');
+    try { return JSON.parse(txt); } catch (_) {}
+    const repaired = txt
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_-]*)\s*:/g, '$1"$2":')
+      .replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, v) => ':"' + v.replace(/"/g, '\\"') + '"');
+    try { return JSON.parse(repaired); } catch (_) {}
+    const dslMatch = txt.match(/["']?dsl["']?\s*:\s*["']([^"']+)["']/i);
+    if (dslMatch) return { dsl: dslMatch[1].trim(), explication: 'DSL extrait d\'une réponse JSON non stricte.' };
+    const ids = ((db && db.operators) || []).map(o => o.id);
+    if (ids.length) {
+      const opMatch = txt.match(new RegExp('\\b(' + ids.join('|') + ')\\[[^\\n{}]+\\](?:\\s*(?:→|⟶)\\s*[^\\n{}]+)?'));
+      if (opMatch) return { dsl: opMatch[0].trim(), explication: 'DSL extrait d\'une réponse non JSON du modèle local.' };
+    }
+    throw new Error('Réponse impossible à convertir en JSON : ' + txt.slice(0, 180));
+  }
+
+  function extractFirstJSONObject(text, db) {
+    if (!text) throw new Error('Réponse vide du modèle local.');
+    const cleaned = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
+    try { return parseJSONTolerant(cleaned, db); } catch (_) {}
+    const start = cleaned.indexOf('{');
+    if (start !== -1) {
+      let depth = 0, inString = false, escaped = false, quote = null;
+      for (let i = start; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (escaped) { escaped = false; continue; }
+        if (ch === '\\') { escaped = true; continue; }
+        if ((ch === '"' || ch === "'") && !inString) { inString = true; quote = ch; continue; }
+        if (ch === quote && inString) { inString = false; quote = null; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        if (ch === '}') depth--;
+        if (depth === 0) return parseJSONTolerant(cleaned.slice(start, i + 1), db);
+      }
+    }
+    return parseJSONTolerant(cleaned, db);
+  }
+
+  /** Réponse brute du modèle → {dsl, explication, validation}. */
+  function parseAIResponse(text, db) {
+    const parsed = extractFirstJSONObject(text, db);
+    if (!parsed || typeof parsed !== 'object') throw new Error('Le modèle n\'a pas renvoyé un objet JSON.');
+    const dsl = String(parsed.dsl || '').replace(/\s+/g, ' ').trim();
+    if (!dsl) throw new Error('Le JSON reçu ne contient pas de champ "dsl".');
+    return {
+      dsl,
+      explication: String(parsed.explication || parsed.explanation || ''),
+      validation: validateDSL(dsl, db)
+    };
+  }
+
+  return {
+    VERSION: '0.4.0', MOD,
+    normalize, findAll, matchTerm, stem, transpile, validateDSL, parseSteps,
+    checkDBStructure, assertDB, lintDB,
+    estimateTokens, buildSystemPrompt, parseJSONTolerant, extractFirstJSONObject, parseAIResponse
+  };
+});
+</script>
+<script>
+/* ===== rosetta.json (inliné par build.js — ne pas éditer ici) ===== */
+const DEFAULT = {"version":"0.4","description":"Pierre de Rosette SPC — règles de transpilation prose→DSL, sans IA","operators":[{"id":"SCAN","tier":"cognitif","priority":10,"signature":["input","focus"],"summary":"Lecture rapide. Détecte les patterns sans décomposition profonde.","notes":["Sortie par défaut : liste de tags"],"triggers":["scan","regarde","lis","parcours","survole","jette un oeil","check","contrôle","review","look at","inspect","look over","browse","look","survey","observe","read through","audit","lint"],"default":"SCAN[◈]","params":{"focus":{"surface":["rapidement","vite","en surface","globalement","overview","quick"],"structure":["structure","organisation","architecture","layout","pattern","design"],"anomalies":["bug","bugs","erreur","problème","anomalie","ce qui ne va pas","error","issue","problem","never","avoid","fix"],"security":["security","auth","authentication","token","password","secret","sensitive","sécurité"],"tests":["test","spec","coverage","unit","integration","testing"]}}},{"id":"ANALYZE","tier":"cognitif","priority":30,"signature":["input","ctx","depth"],"summary":"Décomposition profonde selon un registre et une profondeur.","notes":["1 = surface · 2 = standard · 3 = profond (`depth=3` équivaut à `▲`)"],"triggers":["analyse","analyser","décompose","examine","étudie","creuse","explore","analyze","study","investigate","deep dive","breakdown","understand","evaluate","assess","profile"],"default":"ANALYZE[◈]","params":{"ctx":{"technique":["code","technique","fonctionnel","logique","algorithme","clean architecture","dependency injection","codebase","typescript","implementation","technical","react","nextjs","api","database","docker","performance","bundle","state management"],"symbolique":["symbolique","symbole","sens profond","signification","archétype","sens","meaning","symbolic","narrative"],"narratif":["narratif","récit","histoire","narration","storytelling","narrative","story","user story"],"rationnel":["rationnel","logique","factuel","objectif","logic","rational","factual","objective"]},"depth":{"1":["rapidement","vite","en surface","brièvement"],"2":["normalement","standard"],"3":["en profondeur","approfondi","détaillé","en détail","profondément","▲","analyze the existing codebase","comprehensive analysis","in-depth","thoroughly","deeply","in depth"]}}},{"id":"COMPARE","tier":"cognitif","priority":60,"signature":["a","b","dims"],"summary":"Contraste deux éléments sur des dimensions définies.","notes":["`dims` : liste libre de dimensions de comparaison","Sortie par défaut : table ou delta","`b=§1` par défaut : si l'ancre §1 est vide, utiliser `◊` (output précédent)"],"triggers":["compare","comparer","contraste","différence entre","vs","versus","contrast","distinguish","differentiate","benchmark"],"default":"COMPARE[a=◈, b=§1]","params":{}},{"id":"FIND","tier":"cognitif","priority":90,"signature":["input","pattern","scope","type"],"summary":"Recherche dans la base de code.","triggers":["find","search","locate","look for","where is","where are","grep","search for","find all","find where","scan for","detect all","usages of","references to","calls to","instances of","occurrences of","trouve","cherche","recherche","localise","où est","où sont"],"default":"FIND[input=*, pattern=◈]","params":{"scope":{"*":["all","everywhere","entire","whole","codebase","project","across"],"file":["in this file","current file","here"],"function":["in this function","in this method"]},"type":{"usage":["usage","usages","used","uses","called","calls to","references"],"pattern":["pattern","occurrences","instances","matches","similar"],"import":["import","imported","dependency","depends on"],"definition":["defined","definition","declaration","where is defined"]}}},{"id":"RESONE","tier":"transformatif","priority":35,"signature":["target","layers"],"summary":"Active les couches résonantes. Hérité du Métalangage des Résonances.","triggers":["résonance","résonne","couches","symbolique","sens","résonner","résoner"],"default":"RESONE[◈]","params":{"layers":{"sémantique":["sémantique","signification","sens littéral"],"émotionnel":["émotionnel","ressenti","émotion","feeling"],"symbolique":["symbolique","archétype","symbole"],"narratif":["narratif","récit"],"all":["toutes les couches","tout","complet","entier","all"]}}},{"id":"TRANSDUIT","tier":"transformatif","priority":40,"signature":["input","from","to"],"summary":"Change de registre ou de format.","notes":["`current` / `new` : valeurs génériques (état actuel / nouvel état), sans déclencheur"],"triggers":["transforme","convertis","traduis","change de registre","passe en","transpose","refactore","refactor","convert","transform","migrate","translate","rewrite","adapt","port","restructure","reorganize","modernize","update to"],"default":"TRANSDUIT[◈]","params":{"from":{"technique":["depuis technique","depuis le code"],"symbolique":["depuis symbolique"],"prose":["depuis prose","depuis le texte"],"rationnel":["depuis rationnel"],"narratif":["depuis narratif"],"current":[],"verbose":["verbose","verbeux"],"generic":["generic code","code générique"],"oop":["class","classe","classes","oop","inheritance","héritage"],"complex":["complex","complexe","convoluted"],"inline":["inline"],"slow":["slow","lent","lente"],"monolithic":["monolith","monolithic","monolithe"]},"to":{"STÈLE":["en stèle","en glyphes","en chaîne stèle"],"symbolique":["en symbolique","vers symbolique"],"prose":["en prose","en texte","en français"],"SPC":["en spc","en dsl","en compact"],"narratif":["en narratif","vers narratif"],"clean":["clean","propre"],"minimal":["smaller functions","fonctions plus petites"],"idiomatic":["idiomatic","idiomatique"],"functional":["functional","fonctionnel"],"readable":["readable","lisible"],"module":["separate file","fichier séparé"],"modular":["modular","modulaire"],"optimized":["optimized","optimisé","faster"],"new":[]}}},{"id":"COMPRESS","tier":"transformatif","priority":45,"signature":["input","format","ratio"],"summary":"Réduit à signature minimale.","triggers":["compresse","résume","réduis","archive","synthétise","condense","minimise","garde minimal","keep minimal","minimize","keep small","reduce","compress","simplify","make minimal","keep diff small","trim","shorten","abbreviate","summarize","summarise","sum up","récapitule"],"default":"COMPRESS[◈]","params":{"format":{"STÈLE":["en stèle","en glyphes"],"SPC":["en spc","en dsl"]},"ratio":{"max":["au maximum","le plus court possible","minimal","▲"],"balanced":["équilibré","normal"],"light":["léger","peu"]}}},{"id":"CREATE","tier":"création","priority":70,"signature":["target","type","from"],"summary":"Génère depuis zéro.","triggers":["create","generate","scaffold","make","init","bootstrap","setup","create a","generate a","build a","make a","new component","new file","new module","from scratch","boilerplate","starter","template for","set up","crée","créer","génère","générer","initialise","rédige","rédiger","écris","écrire"],"default":"CREATE[◈]","params":{"type":{"component":["component","widget","element","ui","button","form","modal","page","composant","formulaire"],"function":["function","method","helper","util","hook","handler","callback","fonction"],"api":["api","endpoint","route","controller","service","rest","graphql"],"schema":["schema","model","type","interface","struct","entity","dto"],"test":["test file","spec","test suite","mock","fixture","fichier de test"],"config":["config","configuration","settings","env","dotenv","setup file"]},"from":{"scratch":["from scratch","from zero","brand new","empty","blank","new","de zéro","nouveau","nouvelle"],"template":["template","boilerplate","starter","pattern","convention"]}}},{"id":"ADD","tier":"création","priority":70,"signature":["target","what","scope"],"summary":"Injecte dans de l'existant.","notes":["La Pierre de Rosette émet `scope` dans `target` (`target=*` ou `target=◈`)"],"triggers":["add","inject","insert","include","append","extend","augment","plug in","attach","add to","add a","add the","insert into","include in","extend with","introduce","wire up","hook up","connect","integrate","ajoute","ajouter","injecte","insère","intègre","branche"],"default":"ADD[target=◈]","bind":{"scope":"target"},"params":{"what":{"feature":["feature","functionality","capability","behavior","support for"],"error-handling":["error handling","try catch","exception","fallback","guard"],"logging":["logging","log","console","trace","monitoring","journalisation","journaux","logs"],"validation":["validation","validator","check","guard","sanitize"],"pagination":["pagination","paging","infinite scroll","load more"],"auth":["auth","authentication","authorization","jwt","session","middleware"],"field":["field","property","attribute","column","key","param"],"tests":["test","tests","unit tests","tests unitaires","integration tests","tests d'intégration"]},"scope":{"*":["all","every","each","across","throughout","globally"],"◈":["this","here","current","this one"]}}},{"id":"CLONE","tier":"création","priority":65,"signature":["source","target","adapt","scope"],"summary":"Copie et adapte un pattern existant.","triggers":["copie","colle","copier-coller","copier","dupliquer","répliquer","reproduire","clone","copy","paste","duplicate","replicate","mirror","scaffold from","base on","modeled on","same as","like this but","similar to","inspired from","model on"],"default":"CLONE[source=◈]","params":{"adapt":{"oui":["adapte","modifie","en adaptant","with changes","adjusted","modified","but with"],"non":["identique","exact","verbatim","sans changement","as is","exact copy"]},"scope":{"composant":["composant","component","widget","module"],"fonction":["fonction","function","method","méthode"],"structure":["structure","pattern","template","architecture","scaffold"]}}},{"id":"APPLY","tier":"flux","priority":20,"signature":["skill","input","mode"],"summary":"Invoque un skill ou une convention par pointeur.","notes":["`skill` : `@nom` ou `@nom::sous-module` (ex. `@convention::clean-code`) ; suffixe `⌒` = lazy load"],"triggers":["applique","utilise","lance","active","charge","use","emploie","implement","apply","follow","enforce","adopt","employ","utilize","leverage","stick to","rely on"],"default":"APPLY[@skill, ◈]","params":{"skill":{"@stele":["stèle","stele","l'alphabet"],"@fractales":["fractales","oracle","tirage"],"@metalangage":["métalangage","metalangage","résonances"],"@ler":["ler","écriture-réalité"],"@convention":["convention","conventions","best practices","bonnes pratiques"]}}},{"id":"EXPAND","tier":"flux","priority":25,"signature":["seed","ctx","depth"],"summary":"Déploie une graine compressée vers un output étendu.","notes":["`seed` : chaîne STÈLE · référence `§N` · `◈`"],"triggers":["développe","étends","explicite","détaille depuis","documente","commente","détaille","document","explain","provide","describe","add comments","expand","detail","generate docs","elaborate","comment","annotate"],"default":"EXPAND[seed=◈]","params":{"ctx":{"docs":["documentation","docs","readme"],"jsdoc":["jsdoc","docstring","docstrings"],"git":["git","commit message","message de commit"],"changelog":["changelog","release notes","notes de version"],"structure":["project structure","arborescence","structure du projet"],"explicit":["explicit over implicit"]}}},{"id":"FILTER","tier":"flux","priority":50,"signature":["input","keep","drop","mode"],"summary":"Sélectionne ou exclut selon des critères.","notes":["`⊘x` en position libre équivaut à `drop=[x]` (ex. `FILTER[◈, ⊘deprecated]`)","`mode=delete` : suppression effective (fichiers, données, historique), par opposition à une simple exclusion"],"triggers":["filtre","garde seulement","ne garde que","supprime","enlève","exclut","évite","avoid","never","exclude","remove","filter","strip","ignore","omit","don't use","discard","skip","reject","prevent","forbid","block","dont use","do not use","efface","effacer","delete","erase","purge","wipe","détruis","drop"],"default":"FILTER[◈]","params":{"mode":{"delete":["supprime","supprimer","efface","effacer","delete","remove","erase","purge","wipe","détruis","drop","rm"]}}},{"id":"ITERATE","tier":"flux","priority":55,"signature":["op","n","var"],"summary":"Exécute un opérateur N fois avec variation d'un paramètre.","notes":["Sortie : stack ordonné des résultats","`op` et `n` ne sont émis que s'ils sont exprimés : `op` absent → l'opérateur précédent du pipe, sinon demander ; `n` absent → une passe par élément de `◈`","Forme courte `OP[◈]↻N` acceptée par l'interpréteur ; la Pierre de Rosette émet toujours la forme longue"],"triggers":["répète","refais","itère","pour chaque","sur tous","one by one","for each","iterate","loop","for all","step by step","repeat","go through","process each","test all"],"default":"ITERATE[◈]","params":{}},{"id":"VALIDATE","tier":"validation","priority":85,"signature":["input","scope"],"summary":"Vérifie la conformité.","triggers":["validate","verify","ensure","check that","confirm","assert","test","make sure","valide","vérifie","assure-toi","confirme","teste","assure"],"default":"VALIDATE[◈]","params":{"scope":{"types":["type","typescript","typing","types","typed"],"tests":["test","tests","unit","integration","coverage","spec"],"security":["security","auth","permission","access","role","token"],"schema":["schema","format","structure","shape","contract"],"error":["error","errors","erreur","erreurs","exception","exceptions"]}}},{"id":"DEBUG","tier":"validation","priority":80,"signature":["input","focus"],"summary":"Diagnostique et corrige.","triggers":["debug","fix","resolve","troubleshoot","investigate error","trace","diagnose","répare","corrige","résous","débogue","broken","cassé","plante","fails","failing","not working","ne marche pas","ne fonctionne pas","échoue"],"default":"DEBUG[◈]","params":{"focus":{"error":["error","exception","crash","bug","issue","problem","erreur","bogue","plantage"],"performance":["slow","performance","latency","timeout","memory"],"logic":["logic","wrong output","incorrect","unexpected"]}}},{"id":"DEPLOY","tier":"validation","priority":75,"signature":["input","env"],"summary":"Build et déploie.","triggers":["deploy","build","ship","release","publish","push","bundle","compile","déploie","publie","mets en prod","mise en production","mise en prod","pousse en prod","livre","livraison","go live","roll out","rollout"],"default":"DEPLOY[◈]","params":{"env":{"prod":["production","prod","live","en prod","mise en production","go live"],"staging":["staging","preprod","test env"],"dev":["dev","local","development"]}}}],"modifiers":{"▲_max":["en profondeur","au maximum","approfondi","▲","tout","thoroughly","deeply","comprehensive","in-depth","at all times","fully","in depth"],"pipe":["puis","ensuite","et puis","suivi de","⟶","then","after that","followed by","once done","après ça","après cela","après quoi","next step","as a next step"],"conditional":["si","s'il y a","s'il existe","au cas où","if","when","in case","whenever","as long as","quand","lorsque"],"else":["sinon","autrement","dans le cas contraire","else","otherwise","or else"],"store":["stocke","garde","mémorise","sauvegarde","conserve","save","remember","store","keep track","maintain state"],"session_close":["archive la session","clôture","ferme la session","⊜","scelle","finalize","wrap up","commit"],"lazy_load":["en attente","si besoin","à la demande","⌒"]},"modifier_effects":{"▲_max":"→ ajoute ▲ (profondeur max)","pipe":"→ enchaîne avec ⟶","conditional":"→ structure A ? B : C","else":"→ branche : C du conditionnel","store":"→ ajoute → §N (ancre)","session_close":"→ termine par ⊜","lazy_load":"→ ajoute ⌒ au pointeur de skill"},"output_types":{"prose":["en prose","en texte","en français","explique","explain","describe","summary","as text"],"outline":["en liste","résumé structuré","outline","list of","enumerate","as a list","step by step","étapes"],"STÈLE":["en stèle","en glyphes","chaîne stèle"],"table":["en tableau","as table","comparison","versus","compare"],"signature":["signature","court résumé"],"code":["as code","generate code","implement","en code"]},"shortcuts":{"active la résonance sur tout":"RESONE[◈, layers=all]","transforme en stèle":"COMPRESS[◈, format=STÈLE] → signature","check your work":"SCAN[◈, focus=anomalies] → outline","check for simpler approaches":"SCAN[◈, focus=structure] → outline","review the current project":"SCAN[◈, focus=structure] → outline","check all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","analyze the codebase":"ANALYZE[◈, ctx=technique, depth=3] → outline","analyze design screenshots":"ANALYZE[◈, ctx=technique, depth=2] → outline","generate comprehensive analysis":"ANALYZE[◈, ▲] → prose","avoid using deprecated":"FILTER[◈, ⊘deprecated]","never use any":"FILTER[◈, ⊘any]","never log sensitive data":"FILTER[◈, ⊘sensitive]","avoid clutter":"FILTER[◈, ⊘unnecessary]","use strict typescript":"APPLY[@convention::typescript-strict, ◈]","implement clean architecture":"APPLY[@convention::clean-arch, ◈]","implement dependency injection":"APPLY[@convention::di, ◈]","use factory functions":"APPLY[@convention::factory, ◈]","write unit tests for new code":"VALIDATE[*, scope=tests] → outline","ensure all tests pass":"VALIDATE[*, scope=tests] ? ⊜ : DEBUG[*, focus=error]","make diff as small as possible":"COMPRESS[◈, ratio=max]","keep it simple":"COMPRESS[◈, ratio=balanced]","minimize impact":"COMPRESS[◈, ratio=max]","document your project structure":"EXPAND[seed=◈, ctx=structure] → prose","generate a commit message":"EXPAND[seed=◈, ctx=git] → prose","provide context":"EXPAND[seed=◈] → prose","refactor continuously":"TRANSDUIT[◈, from=current, to=clean]","refactor beyond scope":"TRANSDUIT[◈, from=verbose, to=minimal]","write idiomatic code":"TRANSDUIT[◈, from=generic, to=idiomatic]","scaffold from this":"CLONE[source=◈, scope=structure] → §1","same as but with":"CLONE[source=◈, adapt=oui]","copy this component":"CLONE[source=◈, scope=composant] → §1","replicate this pattern":"CLONE[source=◈, scope=structure] → §1","always use typescript strict mode":"APPLY[@convention::ts-strict, ◈]","always handle errors":"VALIDATE[◈, scope=error] ⟶ DEBUG[◈, focus=error]","always write tests":"VALIDATE[◈, scope=tests]","always follow naming conventions":"APPLY[@convention::naming, ◈]","never use any type":"FILTER[◈, ⊘any]","never commit secrets":"FILTER[◈, ⊘secrets]","never ignore errors":"VALIDATE[◈, scope=error] ? ∅ : DEBUG[◈, focus=error]","prefer functional components":"APPLY[@convention::functional, ◈]","prefer composition over inheritance":"TRANSDUIT[◈, from=oop, to=functional]","prefer explicit over implicit":"EXPAND[seed=◈, ctx=explicit]","optimize for performance":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","optimize bundle size":"COMPRESS[◈, ratio=max]","keep code simple":"COMPRESS[◈, ratio=balanced]","keep it minimal":"COMPRESS[◈, ratio=max]","keep functions small":"FILTER[◈, ⊘complexity]","implement error handling":"APPLY[@convention::error-handling, ◈]","implement proper state management":"APPLY[@convention::state, ◈]","write unit tests":"VALIDATE[◈, scope=tests] → outline","write clean code":"APPLY[@convention::clean-code, ◈]","follow best practices":"APPLY[@convention::best-practices, ◈]","follow the existing patterns":"CLONE[source=◈, scope=structure]","follow project conventions":"APPLY[@convention::project, ◈]","generate commit message":"EXPAND[seed=◈, ctx=git] → prose","generate documentation":"EXPAND[seed=◈, ctx=docs] → prose","fix the bug":"DEBUG[◈, focus=error]","debug this error":"DEBUG[◈, focus=error]","investigate the issue":"SCAN[◈, focus=anomalies] ⟶ DEBUG[◈]","build for production":"DEPLOY[◈, env=prod]","check this code for issues":"SCAN[◈, focus=anomalies] → outline","analyze in depth":"ANALYZE[◈, ▲]","archive the session":"⊜","copy this component and adapt it":"CLONE[source=◈, adapt=oui] → §1","duplicate this function":"CLONE[source=◈, scope=fonction] → §1","same structure as":"CLONE[source=◈, adapt=oui, scope=structure]","write the tests":"VALIDATE[◈, scope=tests]","deploy to production":"DEPLOY[◈, env=prod]","create a new component":"CREATE[◈, type=component, from=scratch]","generate a boilerplate":"CREATE[◈, type=component, from=template]","scaffold a new api endpoint":"CREATE[◈, type=api, from=scratch]","create a new function":"CREATE[◈, type=function, from=scratch]","init a new config file":"CREATE[◈, type=config, from=scratch]","generate a test file":"CREATE[◈, type=test, from=scratch]","create a typescript interface":"CREATE[◈, type=schema, from=scratch]","build a new service":"CREATE[◈, type=api, from=scratch]","add error handling":"ADD[target=◈, what=error-handling]","add error handling to all":"ADD[target=*, what=error-handling]","add validation":"ADD[target=◈, what=validation]","add logging":"ADD[target=◈, what=logging]","add pagination":"ADD[target=◈, what=pagination]","add authentication":"ADD[target=◈, what=auth]","add a field to":"ADD[target=◈, what=field]","inject the dependency":"ADD[target=◈, what=feature]","wire up the api":"ADD[target=◈, what=feature]","find all usages":"FIND[input=*, type=usage, pattern=◈]","find all references":"FIND[input=*, type=usage, pattern=◈]","where is this function called":"FIND[input=*, type=usage, pattern=◈]","search for this pattern":"FIND[input=*, type=pattern, pattern=◈]","find all imports of":"FIND[input=*, type=import, pattern=◈]","where is this defined":"FIND[input=*, type=definition, pattern=◈]","create a responsive navbar":"CREATE[◈, type=component, from=scratch]","create a modal component":"CREATE[◈, type=component, from=scratch]","create a custom hook for api calls":"CREATE[◈, type=function, from=scratch]","create a data table with sorting":"CREATE[◈, type=component, from=scratch]","create a toast notification system":"CREATE[◈, type=component, from=scratch]","create a form with validation":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation]","add dark mode toggle":"ADD[target=◈, what=feature]","add loading spinner":"ADD[target=◈, what=feature]","add infinite scroll":"ADD[target=◈, what=pagination]","add keyboard shortcuts":"ADD[target=◈, what=feature]","add skeleton loader":"ADD[target=◈, what=feature]","create a rest api endpoint":"CREATE[◈, type=api, from=scratch]","create a webhook handler":"CREATE[◈, type=api, from=scratch]","create a cron job":"CREATE[◈, type=function, from=scratch]","create a cache layer":"ADD[target=◈, what=feature]","add rate limiting":"ADD[target=◈, what=feature]","add cors configuration":"ADD[target=◈, what=feature]","add retry logic":"ADD[target=◈, what=error-handling]","add request validation":"ADD[target=◈, what=validation]","add database migration":"CREATE[◈, type=config, from=scratch]","add typescript types":"ADD[target=◈, what=field]","fix all type errors":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=types]","infer the return type":"ANALYZE[◈, ctx=technique, depth=2] → prose","add strict null checks":"VALIDATE[◈, scope=types]","add generic types":"ADD[target=◈, what=field]","write tests for this function":"CREATE[◈, type=test, from=scratch]","add integration tests":"ADD[target=◈, what=feature]","mock this service":"CLONE[source=◈, adapt=oui, scope=fonction]","test edge cases":"VALIDATE[◈, scope=tests]","check test coverage":"SCAN[◈, focus=tests] → outline","add snapshot tests":"ADD[target=◈, what=feature]","why is this not working":"DEBUG[◈, focus=logic]","trace this error":"DEBUG[◈, focus=error]","find the memory leak":"DEBUG[◈, focus=performance]","why is this slow":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","fix the undefined error":"DEBUG[◈, focus=error]","fix the null pointer":"DEBUG[◈, focus=error]","debug the race condition":"DEBUG[◈, focus=logic]","split this into smaller functions":"TRANSDUIT[◈, from=verbose, to=minimal]","remove code duplication":"FILTER[◈, ⊘duplicate] ⟶ CLONE[source=◈, adapt=oui]","make this more readable":"TRANSDUIT[◈, from=complex, to=readable]","extract this into a separate file":"TRANSDUIT[◈, from=inline, to=module]","convert class to functional":"TRANSDUIT[◈, from=oop, to=functional]","simplify this logic":"COMPRESS[◈, ratio=balanced]","rename all instances":"FIND[input=*, type=usage, pattern=◈] ⟶ TRANSDUIT[*, from=current, to=new]","document this function":"EXPAND[seed=◈, ctx=docs] → prose","add jsdoc comments":"EXPAND[seed=◈, ctx=jsdoc] → code","generate api documentation":"EXPAND[seed=◈, ctx=docs] → prose","write a commit message":"EXPAND[seed=◈, ctx=git] → prose","create a changelog entry":"EXPAND[seed=◈, ctx=changelog] → prose","explain what this does":"ANALYZE[◈, ctx=technique, depth=2] → prose","explain this code":"ANALYZE[◈, ctx=technique, depth=2] → prose","review my changes":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=2]","check for breaking changes":"SCAN[◈, focus=anomalies] ⟶ COMPARE[a=◈, b=◊]","prepare for code review":"ANALYZE[◈, ctx=technique, depth=2] ⟶ VALIDATE[◈, scope=tests]","check what changed":"COMPARE[a=◈, b=◊] → outline","check for security vulnerabilities":"SCAN[◈, focus=security] → outline","add input sanitization":"ADD[target=◈, what=validation]","check for sql injection":"SCAN[◈, focus=security]","add csrf protection":"ADD[target=◈, what=auth]","find exposed secrets":"FIND[input=*, type=pattern, pattern=◈]","audit dependencies":"SCAN[◈, focus=security] ⟶ FIND[input=*, type=import, pattern=◈]","optimize this query":"ANALYZE[◈, ctx=technique, ▲] ⟶ TRANSDUIT[◈, from=slow, to=optimized]","reduce bundle size":"COMPRESS[◈, ratio=max]","lazy load this component":"ADD[target=◈, what=feature]","memoize this function":"ADD[target=◈, what=feature]","profile the performance":"ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]","remove unused imports":"FILTER[◈, ⊘unused]","separate concerns":"TRANSDUIT[◈, from=monolithic, to=modular]","create a service layer":"CREATE[◈, type=api, from=scratch]","add dependency injection":"ADD[target=◈, what=feature]","implement repository pattern":"APPLY[@convention::repository, ◈]","create a middleware":"CREATE[◈, type=function, from=scratch]","full code review":"SCAN[◈, focus=anomalies] ⟶ ANALYZE[◈, ctx=technique, depth=3] ⟶ VALIDATE[◈, scope=tests] → outline","fix and test":"DEBUG[◈, focus=error] ⟶ VALIDATE[◈, scope=tests]","refactor and document":"TRANSDUIT[◈, from=complex, to=readable] ⟶ EXPAND[seed=◈, ctx=docs] → prose","create and validate":"CREATE[◈, type=component, from=scratch] ⟶ VALIDATE[◈, scope=types]","build and deploy":"VALIDATE[*, scope=tests] ? DEPLOY[◈, env=prod] : DEBUG[*, focus=error]","full feature workflow":"CREATE[◈, type=component, from=scratch] ⟶ ADD[target=◈, what=validation] ⟶ CREATE[◈, type=test, from=scratch] ⟶ VALIDATE[*, scope=tests]"}};
+</script>
+<script>
+'use strict';
+/* ===== Éditeur =====
+ * Sécurité : aucun gestionnaire inline. Toute valeur dynamique passe par esc()
+ * et n'atteint le JS que via data-* + dataset (décodé par le navigateur), avec
+ * un seul écouteur délégué. La CSP interdit en outre tout script inline non haché.
+ */
+const STORAGE_KEY = 'rosetta-spc';
+const PAGE_SIZE = 20;
+const LOCAL_MODELS = {
+  'google/gemma-3-4b': 'Gemma 3 4B',
+  'mistral-nemo-instruct-2407': 'Mistral Nemo Instruct 2407',
+  'Qwen2.5-Coder-7B-Instruct-Q4_K_M': 'Qwen2.5-Coder 7B Instruct Q4_K_M'
+};
+
+const $ = id => document.getElementById(id);
+const clone = o => JSON.parse(JSON.stringify(o));
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+let DB = clone(DEFAULT);
+let shortcutPage = 0;
+let shortcutFilter = '';
+
+// ─── PERSISTANCE ────────────────────────────────────────────────────────────
+function readStore() {
+  try { return localStorage.getItem(STORAGE_KEY); }
+  catch (e) { status('Stockage local indisponible : les modifications ne seront pas conservées.', true); return null; }
+}
 
 function loadDB() {
-  const saved = localStorage.getItem('rosetta-spc');
-  if (saved) try { DB = JSON.parse(saved); } catch(e) {}
+  const raw = readStore();
+  if (!raw) return;
+  let stored;
+  try { stored = JSON.parse(raw); } catch (e) { status('Base locale illisible ignorée (base embarquée chargée).', true); return; }
+  // format v0.1 : la BDD brute ; format v0.2+ : { version, db, dismissed }
+  const env = stored && stored.operators ? { version: stored.version, db: stored } : stored;
+  if (!env || !env.db || SPC.checkDBStructure(env.db).length) {
+    status('Base locale corrompue ignorée (base embarquée chargée).', true);
+    return;
+  }
+  DB = env.db;
+  if (DB.version !== DEFAULT.version && env.dismissed !== DEFAULT.version) showVersionBanner(DB.version);
 }
 
-function saveDB() {
-  localStorage.setItem('rosetta-spc', JSON.stringify(DB));
-  const bar = document.getElementById('status-bar');
+function saveDB(extra) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.assign({ version: DB.version, db: DB }, extra || {})));
+    status('Sauvegardé');
+    return true;
+  } catch (e) {
+    status('Sauvegarde impossible (' + (e.name === 'QuotaExceededError' ? 'quota dépassé' : 'stockage bloqué') + ') — exporte ta base.', true);
+    return false;
+  }
+}
+
+function showVersionBanner(localVersion) {
+  const b = $('version-banner');
+  b.innerHTML = `Ta base locale est en <strong>v${esc(localVersion || '?')}</strong>, la base embarquée en <strong>v${esc(DEFAULT.version)}</strong> (corrections de schéma et de déclencheurs).
+    <div class="actions">
+      <button class="btn btn-primary btn-sm" data-action="banner-load">Charger la v${esc(DEFAULT.version)} (exporte d'abord ta base si besoin)</button>
+      <button class="btn btn-ghost btn-sm" data-action="banner-keep">Garder ma base</button>
+    </div>`;
+  b.classList.add('show');
+}
+
+let statusTimer = null;
+function status(msg, isError) {
+  const bar = $('status-bar');
+  bar.textContent = msg;
+  bar.classList.toggle('error', !!isError);
   bar.classList.add('show');
-  setTimeout(() => bar.classList.remove('show'), 1800);
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => bar.classList.remove('show'), isError ? 6000 : 1800);
 }
 
-function norm(s) {
-  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['']/g,"'");
-}
-
+// ─── RENDU ──────────────────────────────────────────────────────────────────
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
-  document.getElementById('nav-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  $('section-' + id).classList.add('active');
+  $('nav-' + id).classList.add('active');
+  $('nav-' + id).setAttribute('aria-current', 'page');
   render();
 }
 
 function updateCounts() {
-  document.getElementById('cnt-shortcuts').textContent = Object.keys(DB.shortcuts).length;
-  document.getElementById('cnt-operators').textContent = DB.operators.length;
-  document.getElementById('cnt-modifiers').textContent = Object.keys(DB.modifiers).length;
-  document.getElementById('cnt-outputs').textContent = Object.keys(DB.output_types).length;
+  $('cnt-shortcuts').textContent = Object.keys(DB.shortcuts).length;
+  $('cnt-operators').textContent = DB.operators.length;
+  $('cnt-modifiers').textContent = Object.keys(DB.modifiers).length;
+  $('cnt-outputs').textContent = Object.keys(DB.output_types).length;
+  $('cnt-models').textContent = Object.keys(LOCAL_MODELS).length + ' IA';
+  $('app-version').textContent = 'SPC · règles v' + DB.version;
 }
 
-const PAGE_SIZE = 20;
-let shortcutPage = 0;
-let shortcutFilter = '';
-
 function renderShortcuts() {
-  const el = document.getElementById('shortcuts-list');
+  const el = $('shortcuts-list');
   let entries = Object.entries(DB.shortcuts);
-
-  // Filtre recherche
   if (shortcutFilter) {
-    const f = shortcutFilter.toLowerCase();
-    entries = entries.filter(([k, v]) =>
-      k.toLowerCase().includes(f) || v.toLowerCase().includes(f)
-    );
+    const f = SPC.normalize(shortcutFilter);
+    entries = entries.filter(([k, v]) => SPC.normalize(k).includes(f) || SPC.normalize(v).includes(f));
   }
-
-  if (!entries.length) {
-    el.innerHTML = '<p style="color:var(--muted);padding:20px 0">Aucun raccourci trouvé.</p>';
-    return;
-  }
+  if (!entries.length) { el.innerHTML = '<p class="u19">Aucun raccourci trouvé.</p>'; return; }
 
   const totalPages = Math.ceil(entries.length / PAGE_SIZE);
   if (shortcutPage >= totalPages) shortcutPage = totalPages - 1;
   const page = entries.slice(shortcutPage * PAGE_SIZE, (shortcutPage + 1) * PAGE_SIZE);
 
-  const rows = page.map(([phrase, dsl]) => `
+  const rows = page.map(([phrase, dsl]) => {
+    const v = SPC.validateDSL(dsl, DB);
+    return `
     <div class="shortcut-row">
       <span class="shortcut-phrase">${esc(phrase)}</span>
-      <span class="shortcut-arrow">→</span>
-      <span class="shortcut-dsl">${esc(dsl)}</span>
+      <span class="shortcut-arrow" aria-hidden="true">→</span>
+      <span class="shortcut-dsl${v.ok ? '' : ' invalid'}" ${v.ok ? '' : `title="${esc(v.errors.join(' ; '))}"`}>${v.ok ? '' : '⚠ '}${esc(dsl)}</span>
       <div class="shortcut-actions">
-        <button class="btn btn-ghost btn-sm" onclick="editShortcut('${esc(phrase)}')">✎</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteShortcut('${esc(phrase)}')">✕</button>
+        <button class="btn btn-ghost btn-sm" data-action="edit-shortcut" data-phrase="${esc(phrase)}" aria-label="Modifier ${esc(phrase)}">✎</button>
+        <button class="btn btn-danger btn-sm" data-action="delete-shortcut" data-phrase="${esc(phrase)}" aria-label="Supprimer ${esc(phrase)}">✕</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   const pagination = totalPages > 1 ? `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-      <button class="btn btn-ghost btn-sm" onclick="scPage(-1)" ${shortcutPage===0?'disabled':''}>← Précédent</button>
-      <span style="font-size:12px;color:var(--muted)">
-        Page <strong style="color:var(--text)">${shortcutPage+1}</strong> / ${totalPages}
-        &nbsp;·&nbsp; ${entries.length} raccourcis${shortcutFilter?' trouvés':''}
+    <div class="u20">
+      <button class="btn btn-ghost btn-sm" data-action="page" data-dir="-1" ${shortcutPage === 0 ? 'disabled' : ''}>← Précédent</button>
+      <span class="u6">
+        Page <strong class="u21">${shortcutPage + 1}</strong> / ${totalPages}
+        &nbsp;·&nbsp; ${entries.length} raccourcis${shortcutFilter ? ' trouvés' : ''}
       </span>
-      <button class="btn btn-ghost btn-sm" onclick="scPage(1)" ${shortcutPage===totalPages-1?'disabled':''}>Suivant →</button>
-    </div>` : `<div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:right">${entries.length} raccourcis</div>`;
+      <button class="btn btn-ghost btn-sm" data-action="page" data-dir="1" ${shortcutPage === totalPages - 1 ? 'disabled' : ''}>Suivant →</button>
+    </div>` : `<div class="u22">${entries.length} raccourcis</div>`;
 
   el.innerHTML = rows + pagination;
 }
 
-function scPage(dir) {
-  shortcutPage = Math.max(0, shortcutPage + dir);
-  renderShortcuts();
-}
-
-function filterShortcuts(val) {
-  shortcutFilter = val;
-  shortcutPage = 0;
-  renderShortcuts();
+function tagList(triggers, delAttrs, addAttrs) {
+  return `<div class="tags">${triggers.map((t, ti) => `
+    <span class="tag">${esc(t)}<button class="tag-del" ${delAttrs} data-ti="${ti}" aria-label="Retirer ${esc(t)}">×</button></span>`).join('')}
+    <button class="tag tag-add" ${addAttrs}>+ mot</button>
+  </div>`;
 }
 
 function renderOperators() {
-  const el = document.getElementById('operators-list');
+  const el = $('operators-list');
+  const open = new Set([...document.querySelectorAll('.card-body.open')].map(b => b.id));
   el.innerHTML = DB.operators.map((op, oi) => {
-    const hasParams = Object.keys(op.params).length > 0;
-    const paramsHTML = hasParams ? Object.entries(op.params).map(([pname, pvals]) => `
+    const params = op.params || {};
+    const paramsHTML = Object.keys(params).length ? Object.entries(params).map(([pname, pvals]) => `
       <div class="param-group">
-        <div class="param-name">${esc(pname)} <span style="color:var(--muted);font-weight:400;font-size:10px">paramètre</span></div>
+        <div class="param-name">${esc(pname)} <span class="u23">paramètre</span></div>
         ${Object.entries(pvals).map(([val, triggers]) => `
           <div class="param-value">
             <div class="param-value-name">${esc(val)}</div>
-            <div class="tags">${triggers.map((t,ti) => `
-              <span class="tag">${esc(t)}<span class="tag-del" onclick="removeParamTrigger(${oi},'${esc(pname)}','${esc(val)}',${ti})">×</span></span>`).join('')}
-              <span class="tag tag-add" onclick="addParamTrigger(${oi},'${esc(pname)}','${esc(val)}')">+ mot</span>
-            </div>
+            ${tagList(triggers,
+              `data-action="remove-param-trigger" data-oi="${oi}" data-p="${esc(pname)}" data-v="${esc(val)}"`,
+              `data-action="add-param-trigger" data-oi="${oi}" data-p="${esc(pname)}" data-v="${esc(val)}"`)}
           </div>`).join('')}
-      </div>`).join('') : '<p style="color:var(--muted);font-size:11px;margin-top:8px">Pas de paramètres contextuels pour cet opérateur.</p>';
-
+      </div>`).join('') : '<p class="u24">Pas de paramètres contextuels pour cet opérateur.</p>';
+    const id = 'op-' + oi;
+    const isOpen = open.has(id);
     return `<div class="card">
-      <div class="card-header" onclick="toggleCard('op-${oi}')">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span class="card-id">${op.id}</span>
+      <button class="card-header" data-action="toggle-card" data-id="${id}" aria-expanded="${isOpen}" aria-controls="${id}">
+        <span class="u25">
+          <span class="card-id">${esc(op.id)}</span>
           <span class="card-default">${esc(op.default)}</span>
-        </div>
-        <span class="chevron" id="chev-op-${oi}">▶</span>
-      </div>
-      <div class="card-body" id="op-${oi}">
+          <span class="card-meta">${esc(op.tier || '')}${op.priority != null ? ' · priorité ' + esc(op.priority) : ''}</span>
+        </span>
+        <span class="chevron${isOpen ? ' open' : ''}" id="chev-${id}" aria-hidden="true">▶</span>
+      </button>
+      <div class="card-body${isOpen ? ' open' : ''}" id="${id}">
+        ${op.summary ? `<div class="card-summary">${esc(op.summary)}${op.signature ? ` <code>${esc(op.id)}[${esc(op.signature.join(', '))}]</code>` : ''}</div>` : ''}
         <div class="field-label">Déclencheurs</div>
-        <div class="tags">${op.triggers.map((t,ti) => `
-          <span class="tag">${esc(t)}<span class="tag-del" onclick="removeTrigger(${oi},${ti})">×</span></span>`).join('')}
-          <span class="tag tag-add" onclick="addTrigger(${oi})">+ mot</span>
-        </div>
-        <div class="field-label" style="margin-top:14px">Paramètres contextuels</div>
+        ${tagList(op.triggers, `data-action="remove-trigger" data-oi="${oi}"`, `data-action="add-trigger" data-oi="${oi}"`)}
+        <div class="u26 field-label">Paramètres contextuels</div>
         ${paramsHTML}
       </div>
     </div>`;
@@ -453,26 +1528,20 @@ function renderOperators() {
 }
 
 function renderModifiers() {
-  const el = document.getElementById('modifiers-list');
-  el.innerHTML = Object.entries(DB.modifiers).map(([name, triggers]) => `
+  const effects = DB.modifier_effects || {};
+  $('modifiers-list').innerHTML = Object.entries(DB.modifiers).map(([name, triggers]) => `
     <div class="mod-card">
       <div class="mod-name">${esc(name)}</div>
-      <div class="tags">${triggers.map((t,ti) => `
-        <span class="tag">${esc(t)}<span class="tag-del" onclick="removeModifierTrigger('${esc(name)}',${ti})">×</span></span>`).join('')}
-        <span class="tag tag-add" onclick="addModifierTrigger('${esc(name)}')">+ mot</span>
-      </div>
+      <div class="mod-effect">${esc(effects[name] || 'personnalisé (non interprété par les règles)')}</div>
+      ${tagList(triggers, `data-action="remove-mod-trigger" data-name="${esc(name)}"`, `data-action="add-mod-trigger" data-name="${esc(name)}"`)}
     </div>`).join('');
 }
 
 function renderOutputs() {
-  const el = document.getElementById('outputs-list');
-  el.innerHTML = Object.entries(DB.output_types).map(([name, triggers]) => `
+  $('outputs-list').innerHTML = Object.entries(DB.output_types).map(([name, triggers]) => `
     <div class="mod-card">
-      <div class="mod-name" style="color:var(--accent)">${esc(name)}</div>
-      <div class="tags">${triggers.map((t,ti) => `
-        <span class="tag">${esc(t)}<span class="tag-del" onclick="removeOutputTrigger('${esc(name)}',${ti})">×</span></span>`).join('')}
-        <span class="tag tag-add" onclick="addOutputTrigger('${esc(name)}')">+ mot</span>
-      </div>
+      <div class="u11 mod-name">${esc(name)}</div>
+      ${tagList(triggers, `data-action="remove-out-trigger" data-name="${esc(name)}"`, `data-action="add-out-trigger" data-name="${esc(name)}"`)}
     </div>`).join('');
 }
 
@@ -484,427 +1553,210 @@ function render() {
   renderOutputs();
 }
 
-function toggleCard(id) {
-  const body = document.getElementById(id);
-  const chev = document.getElementById('chev-' + id);
-  body.classList.toggle('open');
-  chev.classList.toggle('open');
-}
-
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-function toggleAddShortcut() {
-  document.getElementById('add-shortcut-form').classList.toggle('open');
+// ─── ÉDITION ────────────────────────────────────────────────────────────────
+function confirmDSL(dsl) {
+  const v = SPC.validateDSL(dsl, DB);
+  return v.ok || confirm('DSL non conforme au schéma :\n- ' + v.errors.join('\n- ') + '\n\nEnregistrer quand même ?');
 }
 
 function addShortcut() {
-  const phrase = document.getElementById('sc-phrase').value.trim();
-  const dsl = document.getElementById('sc-dsl').value.trim();
+  const phrase = $('sc-phrase').value.trim();
+  const dsl = $('sc-dsl').value.trim();
   if (!phrase || !dsl) return;
+  if (!confirmDSL(dsl)) return;
   DB.shortcuts[phrase] = dsl;
-  document.getElementById('sc-phrase').value = '';
-  document.getElementById('sc-dsl').value = '';
-  document.getElementById('add-shortcut-form').classList.remove('open');
-  saveDB(); render();
-}
-
-function deleteShortcut(phrase) {
-  if (!confirm('Supprimer ce raccourci ?')) return;
-  delete DB.shortcuts[phrase];
+  $('sc-phrase').value = ''; $('sc-dsl').value = '';
+  $('add-shortcut-form').classList.remove('open');
   saveDB(); render();
 }
 
 function editShortcut(phrase) {
+  if (!(phrase in DB.shortcuts)) return;
   const newDsl = prompt('Nouveau DSL pour :\n"' + phrase + '"', DB.shortcuts[phrase]);
-  if (newDsl === null) return;
+  if (newDsl === null || !newDsl.trim()) return;
+  if (!confirmDSL(newDsl.trim())) return;
   DB.shortcuts[phrase] = newDsl.trim();
   saveDB(); render();
 }
 
+function deleteShortcut(phrase) {
+  if (!(phrase in DB.shortcuts) || !confirm('Supprimer ce raccourci ?\n"' + phrase + '"')) return;
+  delete DB.shortcuts[phrase];
+  saveDB(); render();
+}
+
 function addTrigger(oi) {
-  const word = prompt('Nouveau mot déclencheur pour ' + DB.operators[oi].id + ' :');
+  const op = DB.operators[oi];
+  const word = (prompt('Nouveau mot déclencheur pour ' + op.id + ' :') || '').trim();
   if (!word) return;
-  DB.operators[oi].triggers.push(word.trim());
+  const k = SPC.normalize(word);
+  const owner = DB.operators.find(o => o.triggers.some(t => SPC.normalize(t) === k));
+  if (owner === op) return status('« ' + word + ' » est déjà un déclencheur de ' + op.id, true);
+  if (owner && !confirm('« ' + word + ' » déclenche déjà ' + owner.id + '. Un déclencheur partagé rend le choix d\'opérateur ambigu (départage par priorité). Continuer ?')) return;
+  op.triggers.push(word);
   saveDB(); render();
 }
 
-function removeTrigger(oi, ti) {
-  DB.operators[oi].triggers.splice(ti, 1);
-  saveDB(); render();
-}
-
-function addParamTrigger(oi, pname, val) {
-  const word = prompt('Nouveau mot pour le paramètre ' + pname + '=' + val + ' :');
-  if (!word) return;
-  DB.operators[oi].params[pname][val].push(word.trim());
-  saveDB(); render();
-}
-
-function removeParamTrigger(oi, pname, val, ti) {
-  DB.operators[oi].params[pname][val].splice(ti, 1);
-  saveDB(); render();
-}
-
-function toggleAddModifier() {
-  document.getElementById('add-modifier-form').classList.toggle('open');
+function addTo(list, label) {
+  const word = (prompt(label) || '').trim();
+  if (!word) return false;
+  if (list.some(t => SPC.normalize(t) === SPC.normalize(word))) { status('Déjà présent', true); return false; }
+  list.push(word);
+  return true;
 }
 
 function addModifier() {
-  const name = document.getElementById('mod-name').value.trim();
-  const triggers = document.getElementById('mod-triggers').value.split(',').map(s => s.trim()).filter(Boolean);
+  const name = $('mod-name').value.trim();
+  const triggers = $('mod-triggers').value.split(',').map(s => s.trim()).filter(Boolean);
   if (!name || !triggers.length) return;
+  if (DB.modifiers[name] && !confirm('Le modificateur « ' + name + ' » existe : remplacer ses déclencheurs ?')) return;
   DB.modifiers[name] = triggers;
-  document.getElementById('mod-name').value = '';
-  document.getElementById('mod-triggers').value = '';
-  document.getElementById('add-modifier-form').classList.remove('open');
+  $('mod-name').value = ''; $('mod-triggers').value = '';
+  $('add-modifier-form').classList.remove('open');
   saveDB(); render();
 }
 
-function addModifierTrigger(name) {
-  const word = prompt('Nouveau mot pour le modificateur "' + name + '" :');
-  if (!word) return;
-  DB.modifiers[name].push(word.trim());
-  saveDB(); render();
-}
-
-function removeModifierTrigger(name, ti) {
-  DB.modifiers[name].splice(ti, 1);
-  saveDB(); render();
-}
-
-function addOutputTrigger(name) {
-  const word = prompt('Nouveau mot déclencheur pour le type "' + name + '" :');
-  if (!word) return;
-  DB.output_types[name].push(word.trim());
-  saveDB(); render();
-}
-
-function removeOutputTrigger(name, ti) {
-  DB.output_types[name].splice(ti, 1);
-  saveDB(); render();
-}
-
-function transpile(input) {
-  const n = norm(input);
-  for (const [phrase, dsl] of Object.entries(DB.shortcuts)) {
-    if (n.includes(norm(phrase))) return { dsl, source: 'shortcut' };
-  }
-  let op = null;
-  for (const o of DB.operators) {
-    if (o.triggers.some(t => n.includes(norm(t)))) { op = o; break; }
-  }
-  if (!op) return { dsl: null };
-  const params = {};
-  for (const [pname, pvals] of Object.entries(op.params)) {
-    for (const [val, triggers] of Object.entries(pvals)) {
-      if (triggers.some(t => n.includes(norm(t)))) { params[pname] = val; break; }
-    }
-  }
-  const mods = {};
-  for (const [key, triggers] of Object.entries(DB.modifiers)) {
-    if (triggers.some(t => n.includes(norm(t)))) mods[key] = true;
-  }
-  let out = null;
-  for (const [type, triggers] of Object.entries(DB.output_types)) {
-    if (triggers.some(t => n.includes(norm(t)))) { out = type; break; }
-  }
-  const extras = [];
-  let subject = '◈';
-  if (params.skill) { subject = params.skill + ', ◈'; }
-  if (params.ctx) extras.push('ctx=' + params.ctx);
-  if (params.depth) extras.push('depth=' + params.depth);
-  if (params.focus) extras.push('focus=' + params.focus);
-  if (params.layers) extras.push('layers=' + params.layers);
-  if (params.format) extras.push('format=' + params.format);
-  if (params.ratio) extras.push('ratio=' + params.ratio);
-  if (params.from) extras.push('from=' + params.from);
-  if (params.to) extras.push('to=' + params.to);
-  if (mods['▲_max']) extras.push('▲');
-  let dsl = op.id + '[' + subject + (extras.length ? ', ' + extras.join(', ') : '') + ']';
-  if (mods.store) dsl += ' → §1';
-  else if (out) dsl += ' → ' + out;
-  if (mods.session_close) dsl += ' ⟶ ⊜';
-  return { dsl, source: 'rules', op: op.id };
-}
-
-function runTest() {
-  const input = document.getElementById('test-input').value.trim();
-  if (!input) return;
-  const res = transpile(input);
-  const tP = Math.ceil(input.length / 4);
-  const el = document.getElementById('test-result');
-  if (!res.dsl) {
-    el.innerHTML = `<div class="result-box"><p class="no-match">Aucun opérateur reconnu. Essaie un verbe d'action (analyse, scan, compresse…) ou ajoute un raccourci.</p></div>`;
-    return;
-  }
-  const tD = Math.ceil(res.dsl.length / 4);
-  const ratio = Math.round(tP / Math.max(tD, 1));
-  el.innerHTML = `<div class="result-box">
-    <div class="result-label">Prose</div>
-    <div class="result-prose">${esc(input)} ${res.source === 'shortcut' ? '<span style="color:var(--accent3);font-size:10px">[raccourci]</span>' : ''}</div>
-    <div class="result-label">DSL</div>
-    <div class="result-dsl">${esc(res.dsl)}</div>
-    <div class="result-meta">
-      <div class="result-metric"><div class="result-metric-val">~${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
-      <div class="result-metric"><div class="result-metric-val">~${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
-      <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
-    </div>
-  </div>`;
-}
-
+// ─── IMPORT / EXPORT / RESET ────────────────────────────────────────────────
 function exportJSON() {
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(DB, null, 2) + '\n'], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'rosetta.json';
-  a.click();
+  a.href = url; a.download = 'rosetta.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-
-function importJSON() { document.getElementById('import-input').click(); }
 
 function handleImport(e) {
   const file = e.target.files[0];
+  e.target.value = '';
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    try {
-      DB = JSON.parse(ev.target.result);
-      saveDB(); render();
-    } catch(err) { alert('JSON invalide'); }
+    let candidate;
+    try { candidate = JSON.parse(ev.target.result); }
+    catch (err) { return alert('Import refusé — JSON invalide :\n' + err.message); }
+    const errs = SPC.checkDBStructure(candidate);
+    if (errs.length) return alert('Import refusé — structure invalide (la base actuelle est conservée) :\n- ' + errs.slice(0, 12).join('\n- '));
+    DB = candidate;
+    saveDB(); render();
+    const lint = SPC.lintDB(DB);
+    status(lint.errors.length ? 'Importé · ' + lint.errors.length + ' problème(s) de schéma (voir ⚠)' : 'Importé', !!lint.errors.length);
   };
   reader.readAsText(file);
-  e.target.value = '';
 }
 
-loadDB();
-render();
-
-// Prompt dynamique — lit DB à chaque appel pour inclure
-// les opérateurs, modificateurs ET types de sortie courants
-function buildSystemPrompt() {
-  const ops = DB.operators.map(o => o.id).join(' ');
-
-  const mods = Object.entries(DB.modifiers)
-    .map(([name, triggers]) => {
-      const samples = triggers.slice(0, 3).join('/');
-      // Associer chaque modificateur à son effet DSL
-      const effects = {
-        '▲_max':        '→ ajoute ▲ au paramètre (profondeur max)',
-        'pipe':         '→ enchaîne avec ⟶',
-        'conditional':  '→ structure A ? B : C',
-        'else':         '→ branche : C du conditionnel',
-        'store':        '→ ajoute → §1 pour stocker le résultat',
-        'session_close':'→ termine par ⊜',
-        'lazy_load':    '→ ajoute ⌒ après le skill'
-      };
-      const effect = effects[name] || '';
-      return `${name}(${samples}) ${effect}`;
-    }).join('\n  ');
-
-  const outputs = Object.entries(DB.output_types)
-    .map(([type, triggers]) => `${type}(${triggers.slice(0,2).join('/')})`)
-    .join(' ');
-
-  return `Tu es un transpileur DSL SPC. Convertis la demande utilisateur en DSL SPC.
-
-OPÉRATEURS: ${ops}
-
-MODIFICATEURS (affectent la forme du DSL généré):
-  ${mods}
-
-TYPES DE SORTIE (mot-clé après →): ${outputs}
-
-SYMBOLES: ◈=input courant §N=référence nommée ?=conditionnel *=wildcard ▲=profondeur max ⊘=exclure ↻=répéter N fois ⟶=pipe ⊜=clôture session ◊=trace précédente
-SYNTAXE: OP[param=val] → TYPE | A ⟶ B | A ? B : C
-
-EXEMPLES:
-"analyse ce code en profondeur" → {"dsl":"ANALYZE[◈, ▲]","explication":"analyse profonde du code","tokens_prose":6,"tokens_spc":2}
-"puis archive la session" → {"dsl":"⊜","explication":"clôture session","tokens_prose":4,"tokens_spc":1}
-"retourne une liste" → {"dsl":"SCAN[◈] → outline","explication":"scan avec sortie liste","tokens_prose":3,"tokens_spc":2}
-"si bug trouvé alors debug sinon archive" → {"dsl":"SCAN[◈] ? DEBUG[◈, focus=error] : ⊜","explication":"conditionnel debug/archive","tokens_prose":8,"tokens_spc":4}
-
-RÈGLE CRITIQUE: JSON strict uniquement.
-INTERDIT: markdown, backticks, commentaires, texte avant/après, clés sans guillemets, apostrophes simples.
-FORMAT EXACT: {"dsl":"...","explication":"...","tokens_prose":N,"tokens_spc":N}`;
+function resetDB() {
+  if (!confirm('Remplacer ta base locale par la base embarquée v' + DEFAULT.version + ' ?\nPense à exporter la tienne avant si tu veux la garder.')) return;
+  DB = clone(DEFAULT);
+  $('version-banner').classList.remove('show');
+  saveDB(); render();
+  status('Base réinitialisée (v' + DB.version + ')');
 }
 
-const LOCAL_MODELS = {
-  'google/gemma-3-4b': 'Gemma 3 4B',
-  'mistral-nemo-instruct-2407': 'Mistral Nemo Instruct 2407',
-  'Qwen2.5-Coder-7B-Instruct-Q4_K_M': 'Qwen2.5-Coder 7B Instruct Q4_K_M'
-};
+// ─── TESTER ─────────────────────────────────────────────────────────────────
+function metricsHTML(prose, dsl) {
+  const tP = SPC.estimateTokens(prose), tD = SPC.estimateTokens(dsl);
+  const ratio = Math.round(tP / Math.max(tD, 1) * 10) / 10;
+  return `<div class="result-meta">
+      <div class="result-metric"><div class="result-metric-val">~${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
+      <div class="result-metric"><div class="result-metric-val">~${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
+      <div class="result-metric"><div class="u11 result-metric-val">×${ratio}</div><div class="result-metric-lbl">ratio (estimé)</div></div>
+    </div>`;
+}
 
+function issuesHTML(warnings, validation, complete) {
+  const lines = complete === false ? ['INSTRUCTION INCOMPLÈTE : une partie de la prose n\'est pas dans le DSL'] : [];
+  lines.push(...(warnings || []));
+  if (validation && !validation.ok) lines.push(...validation.errors.map(e => 'schéma : ' + e));
+  return lines.length ? `<div class="result-warn">${lines.map(l => '⚠ ' + esc(l)).join('<br>')}</div>` : '';
+}
+
+function runTest() {
+  const input = $('test-input').value.trim();
+  if (!input) return;
+  const res = SPC.transpile(input, DB);
+  const el = $('test-result');
+  if (!res.dsl) {
+    el.innerHTML = `<div class="result-box"><p class="no-match">Aucun opérateur reconnu. Essaie un verbe d'action (analyse, scan, compresse…) ou ajoute un raccourci.</p>${issuesHTML(res.warnings)}</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="result-box">
+    <div class="result-label">Prose</div>
+    <div class="result-prose">${esc(input)} ${res.source === 'shortcut' ? '<span class="u27">[raccourci]</span>' : ''}</div>
+    <div class="result-label">DSL</div>
+    <div class="result-dsl">${esc(res.dsl)}</div>
+    ${issuesHTML(res.warnings, SPC.validateDSL(res.dsl, DB), res.complete)}
+    ${metricsHTML(input, res.dsl)}
+    <div class="u28"><button class="btn btn-primary btn-sm" data-action="copy" data-dsl="${esc(res.dsl)}">Copier DSL</button></div>
+  </div>`;
+}
+
+// ─── IA LOCALE ──────────────────────────────────────────────────────────────
 function currentModelLabel() {
-  const model = document.getElementById('lm-model')?.value.trim() || '';
+  const model = $('lm-model').value.trim();
   return LOCAL_MODELS[model] || model || 'IA locale';
 }
 
-function parseJSONTolerant(candidate) {
-  let txt = String(candidate || '').trim();
-  if (!txt) throw new Error('Réponse JSON vide.');
-
-  // 1) JSON strict.
-  try { return JSON.parse(txt); } catch (_) {}
-
-  // 2) Réparation fréquente des LLM locaux : {dsl: "..."} au lieu de {"dsl":"..."}.
-  let repaired = txt
-    .replace(/[“”]/g, '"')
-    .replace(/[‘’]/g, "'")
-    .replace(/,\s*([}\]])/g, '$1')
-    .replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_-]*)\s*:/g, '$1"$2":')
-    .replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, function(_, value) {
-      return ':"' + value.replace(/"/g, '\\"') + '"';
-    });
-
-  try { return JSON.parse(repaired); } catch (_) {}
-
-  // 3) Dernier secours : extraction directe du champ dsl si le modèle a presque respecté le format.
-  const dslMatch = txt.match(/["']?dsl["']?\s*:\s*["']([^"']+)["']/i);
-  if (dslMatch) {
-    return {
-      dsl: dslMatch[1].trim(),
-      explication: 'DSL extrait depuis une réponse JSON non stricte.',
-      tokens_prose: 0,
-      tokens_spc: Math.ceil(dslMatch[1].length / 4)
-    };
-  }
-
-  // 4) Dernier secours bis : extraction d'une forme DSL SPC présente dans le texte.
-  const opNames = (typeof DB !== 'undefined' ? DB.operators.map(o => o.id) : ['SCAN','ANALYZE','COMPARE','RESONE','TRANSDUIT','COMPRESS','APPLY','EXPAND','FILTER','ITERATE','CLONE','VALIDATE','DEBUG','DEPLOY']).join('|');
-  const opMatch = txt.match(new RegExp('\\b(' + opNames + ')\\[[^\\n{}]+\\](?:\\s*(?:→|⟶)\\s*[^\\n{}]+)?'));
-  if (opMatch) {
-    return {
-      dsl: opMatch[0].trim(),
-      explication: 'DSL extrait depuis une réponse non JSON du modèle local.',
-      tokens_prose: 0,
-      tokens_spc: Math.ceil(opMatch[0].length / 4)
-    };
-  }
-
-  throw new Error('Réponse impossible à convertir en JSON strict : ' + txt.slice(0, 180));
+function initModelSelect() {
+  const sel = $('lm-model-select');
+  sel.innerHTML = Object.entries(LOCAL_MODELS).map(([id, label]) => `<option value="${esc(id)}">${esc(label)}</option>`).join('')
+    + '<option value="custom">Modèle personnalisé</option>';
+  $('lm-model').value = Object.keys(LOCAL_MODELS)[0];
+  sel.addEventListener('change', () => { if (sel.value !== 'custom') $('lm-model').value = sel.value; });
+  $('lm-model').addEventListener('change', () => {
+    const v = $('lm-model').value.trim();
+    sel.value = v in LOCAL_MODELS ? v : 'custom';
+  });
 }
 
-function extractFirstJSONObject(text) {
-  if (!text) throw new Error('Réponse vide du modèle local.');
-  const cleaned = String(text)
-    .replace(/```json/gi, '')
-    .replace(/```/g, '')
-    .trim();
-
-  // Cas idéal ou presque idéal.
-  try { return parseJSONTolerant(cleaned); } catch (_) {}
-
-  // Cas fréquent : une phrase précède ou suit l'objet.
-  const start = cleaned.indexOf('{');
-  if (start !== -1) {
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
-    let quote = null;
-
-    for (let i = start; i < cleaned.length; i++) {
-      const ch = cleaned[i];
-      if (escaped) { escaped = false; continue; }
-      if (ch === '\\') { escaped = true; continue; }
-      if ((ch === '"' || ch === "'") && !inString) { inString = true; quote = ch; continue; }
-      if (ch === quote && inString) { inString = false; quote = null; continue; }
-      if (inString) continue;
-      if (ch === '{') depth++;
-      if (ch === '}') depth--;
-      if (depth === 0) {
-        const candidate = cleaned.slice(start, i + 1);
-        return parseJSONTolerant(candidate);
-      }
-    }
-  }
-
-  // Dernier essai sans accolades complètes.
-  return parseJSONTolerant(cleaned);
-}
-
-function normalizeAIResult(parsed, prose) {
-  if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Le modèle n’a pas renvoyé un objet JSON.');
-  }
-  const dsl = String(parsed.dsl || '').trim();
-  if (!dsl) throw new Error('Le JSON reçu ne contient pas de champ "dsl".');
-  return {
-    dsl,
-    explication: String(parsed.explication || parsed.explanation || 'Traduction SPC générée localement.'),
-    tokens_prose: Number(parsed.tokens_prose) || Math.ceil(prose.length / 4),
-    tokens_spc: Number(parsed.tokens_spc) || Math.ceil(dsl.length / 4)
-  };
-}
-
-function syncModelFromSelect() {
-  const select = document.getElementById('lm-model-select');
-  const input = document.getElementById('lm-model');
-  if (!select || !input || select.value === 'custom') return;
-  input.value = select.value;
-}
-
-function syncCustomModel() {
-  const select = document.getElementById('lm-model-select');
-  const input = document.getElementById('lm-model');
-  if (!select || !input) return;
-  const known = Object.keys(LOCAL_MODELS);
-  select.value = known.includes(input.value.trim()) ? input.value.trim() : 'custom';
-}
+function lmStatus(text, color) { const s = $('lm-status'); s.textContent = text; s.style.color = color; }
 
 async function testConnection() {
-  const url = document.getElementById('lm-url').value.trim();
-  const status = document.getElementById('lm-status');
-  status.textContent = 'Test…'; status.style.color = 'var(--muted)';
+  const url = $('lm-url').value.trim().replace(/\/+$/, '');
+  lmStatus('Test…', 'var(--muted)');
   try {
     const r = await fetch(url + '/v1/models', { signal: AbortSignal.timeout(4000) });
     const d = await r.json();
-    const models = d.data?.map(m => m.id).join(', ') || '—';
-    status.textContent = '✓ Connecté · ' + models;
-    status.style.color = 'var(--accent)';
-  } catch(e) {
-    status.textContent = '✗ ' + (e.message.includes('fetch') ? 'LM Studio non démarré' : e.message);
-    status.style.color = 'var(--danger)';
+    const models = (d.data || []).map(m => m.id).join(', ') || '—';
+    lmStatus('✓ Connecté · ' + models, 'var(--accent)');
+  } catch (e) {
+    lmStatus('✗ ' + (/fetch|Failed|NetworkError|violates/i.test(e.message) ? 'LM Studio non démarré, CORS ou CSP' : e.message), 'var(--danger)');
   }
 }
 
-function setLMInput(text) { document.getElementById('lm-input').value = text; }
-
-async function runAI() {
-  const prose = document.getElementById('lm-input').value.trim();
-  if (!prose) return;
-  const url   = document.getElementById('lm-url').value.trim();
-  const model = document.getElementById('lm-model').value.trim();
-  const el    = document.getElementById('lm-result');
-
-  // ── PRIORITÉ 1 : raccourcis BDD (déterministe, zéro appel IA) ──────────────
-  const shortcut = transpile(prose);
-  if (shortcut.dsl && shortcut.source === 'shortcut') {
-    const tP = Math.ceil(prose.length / 4);
-    const tD = Math.ceil(shortcut.dsl.length / 4);
-    const ratio = Math.round(tP / Math.max(tD, 1));
-    el.innerHTML = `<div class="result-box" style="margin-top:12px">
+function aiResultHTML(prose, dsl, label, explication, validation, warnings, canAdd) {
+  return `<div class="u1 result-box">
       <div class="result-label">Prose</div>
-      <div class="result-prose" style="color:var(--muted)">${esc(prose)}</div>
-      <div class="result-label">DSL <span style="font-size:10px;color:var(--accent2);margin-left:8px">raccourci BDD · IA non consultée</span></div>
-      <div class="result-dsl" style="font-size:18px">${esc(shortcut.dsl)}</div>
-      <div style="font-size:12px;color:var(--muted);margin:8px 0 12px">Correspondance exacte dans la base de règles.</div>
-      <div class="result-meta">
-        <div class="result-metric"><div class="result-metric-val">${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
-        <div class="result-metric"><div class="result-metric-val">${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
-        <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('${shortcut.dsl.replace(/'/g,'\\\'')}')">Copier DSL</button>
+      <div class="result-prose">${esc(prose)}</div>
+      <div class="result-label">DSL <span class="u29">${esc(label)}</span></div>
+      <div class="u30 result-dsl">${esc(dsl)}</div>
+      ${explication ? `<div class="u31">${esc(explication)}</div>` : ''}
+      ${issuesHTML(warnings, validation)}
+      ${metricsHTML(prose, dsl)}
+      <div class="u32">
+        <button class="btn btn-primary btn-sm" data-action="copy" data-dsl="${esc(dsl)}">Copier DSL</button>
+        ${canAdd ? `<button class="btn btn-ghost btn-sm" data-action="add-to-shortcuts" data-phrase="${esc(prose)}" data-dsl="${esc(dsl)}">+ Ajouter aux raccourcis</button>` : ''}
       </div>
     </div>`;
-    document.getElementById('lm-status').textContent = '✓ Raccourci BDD — IA non consultée';
-    document.getElementById('lm-status').style.color = 'var(--accent2)';
+}
+
+async function runAI() {
+  const prose = $('lm-input').value.trim();
+  if (!prose) return;
+  const url = $('lm-url').value.trim().replace(/\/+$/, '');
+  const model = $('lm-model').value.trim();
+  const el = $('lm-result');
+
+  // 1. Raccourci de la BDD : déterministe, zéro appel IA
+  const rule = SPC.transpile(prose, DB);
+  if (rule.source === 'shortcut') {
+    el.innerHTML = aiResultHTML(prose, rule.dsl, 'raccourci BDD · IA non consultée', 'Correspondance dans la base de règles.', SPC.validateDSL(rule.dsl, DB), rule.warnings, false);
+    lmStatus('✓ Raccourci BDD — IA non consultée', 'var(--accent2)');
     return;
   }
 
-  // ── PRIORITÉ 2 : IA locale (si aucun raccourci ne correspond) ──────────────
-  el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:14px 0"><span class="spinner"></span>IA locale traduit…</div>';
-
+  // 2. IA locale
+  el.innerHTML = '<div class="u33"><span class="spinner" aria-hidden="true"></span>IA locale traduit…</div>';
   try {
     const res = await fetch(url + '/v1/chat/completions', {
       method: 'POST',
@@ -912,70 +1764,97 @@ async function runAI() {
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: buildSystemPrompt() },
-          { role: 'user',   content: prose }
+          { role: 'system', content: SPC.buildSystemPrompt(DB) },
+          { role: 'user', content: prose }
         ],
-        temperature: 0,
-        top_p: 0.9,
-        max_tokens: 200,
-        stream: false
+        temperature: 0, top_p: 0.9, max_tokens: 200, stream: false
       }),
       signal: AbortSignal.timeout(20000)
     });
-
     const data = await res.json();
     if (!res.ok || data.error) {
-      const detail = data.error?.message || data.message || JSON.stringify(data).slice(0, 240);
+      const detail = (data.error && data.error.message) || data.message || JSON.stringify(data).slice(0, 240);
       throw new Error('Erreur LM Studio HTTP ' + res.status + (detail && detail !== '{}' ? ' · ' + detail : ''));
     }
-
-    const raw  = data.choices?.[0]?.message?.content?.trim() || '';
-    const parsed = normalizeAIResult(extractFirstJSONObject(raw), prose);
-
-    const tP = parsed.tokens_prose;
-    const tD = parsed.tokens_spc;
-    const ratio = Math.round(tP / Math.max(tD, 1));
-
-    el.innerHTML = `<div class="result-box" style="margin-top:12px">
-      <div class="result-label">Prose</div>
-      <div class="result-prose" style="color:var(--muted)">${esc(prose)}</div>
-      <div class="result-label">DSL <span style="font-size:10px;color:var(--accent2);margin-left:8px">généré par ${esc(currentModelLabel())} · zéro token cloud</span></div>
-      <div class="result-dsl" style="font-size:18px">${esc(parsed.dsl)}</div>
-      <div style="font-size:12px;color:var(--muted);margin:8px 0 12px">${esc(parsed.explication||'')}</div>
-      <div class="result-meta">
-        <div class="result-metric"><div class="result-metric-val">${tP}</div><div class="result-metric-lbl">tokens prose</div></div>
-        <div class="result-metric"><div class="result-metric-val">${tD}</div><div class="result-metric-lbl">tokens DSL</div></div>
-        <div class="result-metric"><div class="result-metric-val" style="color:var(--accent)">×${ratio}</div><div class="result-metric-lbl">ratio</div></div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:8px">
-        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('${parsed.dsl.replace(/'/g,'\\\'')}')">Copier DSL</button>
-        <button class="btn btn-ghost btn-sm" onclick="addToShortcuts('${prose.replace(/'/g,'\\\'')}','${parsed.dsl.replace(/'/g,'\\\'')}')">+ Ajouter aux raccourcis</button>
-      </div>
-    </div>`;
-
-    document.getElementById('lm-status').textContent = '✓ Connecté · dernière traduction OK · ' + currentModelLabel();
-    document.getElementById('lm-status').style.color = 'var(--accent)';
-
-  } catch(e) {
-    const ruleFallback = transpile(prose);
-    const msg = e.message.includes('fetch') || e.message.includes('Failed')
-      ? 'LM Studio non démarré ou CORS bloqué. Lance : python -m http.server 8080 dans le dossier.'
+    const raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+    const ai = SPC.parseAIResponse(raw, DB);
+    el.innerHTML = aiResultHTML(prose, ai.dsl, 'généré par ' + currentModelLabel() + ' · zéro token cloud', ai.explication, ai.validation, [], true);
+    lmStatus('✓ Connecté · dernière traduction OK · ' + currentModelLabel(), 'var(--accent)');
+  } catch (e) {
+    // 3. Repli sur les règles
+    const msg = /fetch|Failed|NetworkError|violates/i.test(e.message)
+      ? 'LM Studio non démarré, CORS ou CSP bloquant. En file://, lance : python -m http.server 8080 dans le dossier.'
       : e.message;
-    el.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:12px;background:rgba(240,90,90,.08);border-radius:6px;margin-top:10px">✗ ${esc(msg)}<br><br><span style="color:var(--muted)">Conseil : baisse la température à 0.0 ou vérifie que le modèle renvoie uniquement du JSON brut.</span>${ruleFallback.dsl ? `<br><br><span style="color:var(--accent2)">Fallback sans IA :</span> <span style="color:var(--accent)">${esc(ruleFallback.dsl)}</span>` : ''}</div>`;
+    el.innerHTML = `<div class="result-error">✗ ${esc(msg)}${rule.dsl
+      ? `<br><br><span class="u13">Repli sans IA :</span> <span class="u11">${esc(rule.dsl)}</span>${issuesHTML(rule.warnings, null, rule.complete)}`
+      : ''}</div>`;
+    lmStatus('✗ IA locale indisponible', 'var(--danger)');
   }
 }
 
 function addToShortcuts(phrase, dsl) {
-  if (!DB.shortcuts[phrase]) {
-    DB.shortcuts[phrase] = dsl;
-    saveDB(); render();
-    const bar = document.getElementById('status-bar');
-    bar.textContent = 'Raccourci ajouté !';
-    bar.classList.add('show');
-    setTimeout(() => { bar.textContent = 'Sauvegardé'; bar.classList.remove('show'); }, 2000);
-  }
+  if (phrase in DB.shortcuts) return status('Ce raccourci existe déjà', true);
+  if (!confirmDSL(dsl)) return;
+  DB.shortcuts[phrase] = dsl;
+  saveDB(); render();
+  status('Raccourci ajouté !');
 }
 
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); status('DSL copié'); }
+  catch (e) { status('Copie impossible (presse-papiers bloqué)', true); }
+}
+
+// ─── DÉLÉGATION D'ÉVÉNEMENTS ────────────────────────────────────────────────
+const ACTIONS = {
+  'section': d => showSection(d.id),
+  'import': () => $('import-input').click(),
+  'export': () => exportJSON(),
+  'reset': () => resetDB(),
+  'banner-load': () => { DB = clone(DEFAULT); $('version-banner').classList.remove('show'); saveDB(); render(); status('Base v' + DB.version + ' chargée'); },
+  'banner-keep': () => { $('version-banner').classList.remove('show'); saveDB({ dismissed: DEFAULT.version }); },
+  'toggle-add-shortcut': () => $('add-shortcut-form').classList.toggle('open'),
+  'add-shortcut': () => addShortcut(),
+  'edit-shortcut': d => editShortcut(d.phrase),
+  'delete-shortcut': d => deleteShortcut(d.phrase),
+  'page': d => { shortcutPage = Math.max(0, shortcutPage + Number(d.dir)); renderShortcuts(); },
+  'toggle-card': (d, el) => {
+    const open = $(d.id).classList.toggle('open');
+    $('chev-' + d.id).classList.toggle('open', open);
+    el.setAttribute('aria-expanded', String(open));
+  },
+  'add-trigger': d => addTrigger(Number(d.oi)),
+  'remove-trigger': d => { DB.operators[Number(d.oi)].triggers.splice(Number(d.ti), 1); saveDB(); render(); },
+  'add-param-trigger': d => { const op = DB.operators[Number(d.oi)]; if (addTo(op.params[d.p][d.v], 'Nouveau mot pour ' + op.id + ' ' + d.p + '=' + d.v + ' :')) { saveDB(); render(); } },
+  'remove-param-trigger': d => { DB.operators[Number(d.oi)].params[d.p][d.v].splice(Number(d.ti), 1); saveDB(); render(); },
+  'toggle-add-modifier': () => $('add-modifier-form').classList.toggle('open'),
+  'add-modifier': () => addModifier(),
+  'add-mod-trigger': d => { if (addTo(DB.modifiers[d.name], 'Nouveau mot pour le modificateur « ' + d.name + ' » :')) { saveDB(); render(); } },
+  'remove-mod-trigger': d => { DB.modifiers[d.name].splice(Number(d.ti), 1); saveDB(); render(); },
+  'add-out-trigger': d => { if (addTo(DB.output_types[d.name], 'Nouveau mot pour le type « ' + d.name + ' » :')) { saveDB(); render(); } },
+  'remove-out-trigger': d => { DB.output_types[d.name].splice(Number(d.ti), 1); saveDB(); render(); },
+  'run-test': () => runTest(),
+  'test-connection': () => testConnection(),
+  'run-ai': () => runAI(),
+  'example': (d, el) => { $('lm-input').value = el.textContent.trim(); $('lm-input').focus(); },
+  'copy': d => copyText(d.dsl),
+  'add-to-shortcuts': d => addToShortcuts(d.phrase, d.dsl)
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn) fn(el.dataset, el);
+});
+$('import-input').addEventListener('change', handleImport);
+$('shortcut-filter').addEventListener('input', e => { shortcutFilter = e.target.value; shortcutPage = 0; renderShortcuts(); });
+$('test-input').addEventListener('keydown', e => { if (e.key === 'Enter') runTest(); });
+$('lm-input').addEventListener('keydown', e => { if (e.key === 'Enter') runAI(); });
+
+initModelSelect();
+loadDB();
+render();
 </script>
 </body>
 </html>

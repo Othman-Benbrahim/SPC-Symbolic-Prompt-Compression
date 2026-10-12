@@ -1,14 +1,23 @@
 {
-  "version": "0.1",
+  "version": "0.4",
   "description": "Pierre de Rosette SPC — règles de transpilation prose→DSL, sans IA",
   "operators": [
     {
       "id": "SCAN",
+      "tier": "cognitif",
+      "priority": 10,
+      "signature": [
+        "input",
+        "focus"
+      ],
+      "summary": "Lecture rapide. Détecte les patterns sans décomposition profonde.",
+      "notes": [
+        "Sortie par défaut : liste de tags"
+      ],
       "triggers": [
         "scan",
         "regarde",
         "lis",
-        "vérifie",
         "parcours",
         "survole",
         "jette un oeil",
@@ -16,7 +25,6 @@
         "contrôle",
         "review",
         "look at",
-        "verify",
         "inspect",
         "look over",
         "browse",
@@ -24,7 +32,6 @@
         "survey",
         "observe",
         "read through",
-        "assess",
         "audit",
         "lint"
       ],
@@ -84,6 +91,17 @@
     },
     {
       "id": "ANALYZE",
+      "tier": "cognitif",
+      "priority": 30,
+      "signature": [
+        "input",
+        "ctx",
+        "depth"
+      ],
+      "summary": "Décomposition profonde selon un registre et une profondeur.",
+      "notes": [
+        "1 = surface · 2 = standard · 3 = profond (`depth=3` équivaut à `▲`)"
+      ],
       "triggers": [
         "analyse",
         "analyser",
@@ -92,7 +110,6 @@
         "étudie",
         "creuse",
         "explore",
-        "inspecte",
         "analyze",
         "study",
         "investigate",
@@ -101,7 +118,6 @@
         "understand",
         "evaluate",
         "assess",
-        "diagnose",
         "profile"
       ],
       "default": "ANALYZE[◈]",
@@ -182,13 +198,27 @@
             "comprehensive analysis",
             "in-depth",
             "thoroughly",
-            "deeply"
+            "deeply",
+            "in depth"
           ]
         }
       }
     },
     {
       "id": "COMPARE",
+      "tier": "cognitif",
+      "priority": 60,
+      "signature": [
+        "a",
+        "b",
+        "dims"
+      ],
+      "summary": "Contraste deux éléments sur des dimensions définies.",
+      "notes": [
+        "`dims` : liste libre de dimensions de comparaison",
+        "Sortie par défaut : table ou delta",
+        "`b=§1` par défaut : si l'ancre §1 est vide, utiliser `◊` (output précédent)"
+      ],
       "triggers": [
         "compare",
         "comparer",
@@ -205,696 +235,16 @@
       "params": {}
     },
     {
-      "id": "RESONE",
-      "triggers": [
-        "résonance",
-        "résonne",
-        "couches",
-        "symbolique",
-        "sens",
-        "activates",
-        "résonner",
-        "résoner"
-      ],
-      "default": "RESONE[◈]",
-      "params": {
-        "layers": {
-          "sémantique": [
-            "sémantique",
-            "signification",
-            "sens littéral"
-          ],
-          "émotionnel": [
-            "émotionnel",
-            "ressenti",
-            "émotion",
-            "feeling"
-          ],
-          "symbolique": [
-            "symbolique",
-            "archétype",
-            "symbole"
-          ],
-          "narratif": [
-            "narratif",
-            "récit"
-          ],
-          "all": [
-            "toutes les couches",
-            "tout",
-            "complet",
-            "entier",
-            "all"
-          ]
-        }
-      }
-    },
-    {
-      "id": "TRANSDUIT",
-      "triggers": [
-        "transforme",
-        "convertis",
-        "traduis",
-        "change de registre",
-        "passe en",
-        "transpose",
-        "refactore",
-        "refactor",
-        "convert",
-        "transform",
-        "migrate",
-        "translate",
-        "rewrite",
-        "adapt",
-        "port",
-        "restructure",
-        "reorganize",
-        "modernize",
-        "update to"
-      ],
-      "default": "TRANSDUIT[◈]",
-      "params": {
-        "from": {
-          "technique": [
-            "depuis technique",
-            "depuis le code"
-          ],
-          "symbolique": [
-            "depuis symbolique"
-          ],
-          "prose": [
-            "depuis prose",
-            "depuis le texte"
-          ],
-          "rationnel": [
-            "depuis rationnel"
-          ]
-        },
-        "to": {
-          "STÈLE": [
-            "en stèle",
-            "en glyphes",
-            "en chaîne stèle"
-          ],
-          "symbolique": [
-            "en symbolique",
-            "vers symbolique"
-          ],
-          "prose": [
-            "en prose",
-            "en texte",
-            "en français"
-          ],
-          "SPC": [
-            "en spc",
-            "en dsl",
-            "en compact"
-          ]
-        }
-      }
-    },
-    {
-      "id": "COMPRESS",
-      "triggers": [
-        "compresse",
-        "résume",
-        "réduis",
-        "archive",
-        "synthétise",
-        "condense",
-        "minimise",
-        "garde minimal",
-        "keep minimal",
-        "minimize",
-        "keep small",
-        "reduce",
-        "compress",
-        "simplify",
-        "make minimal",
-        "keep diff small",
-        "trim",
-        "shorten",
-        "abbreviate"
-      ],
-      "default": "COMPRESS[◈]",
-      "params": {
-        "format": {
-          "STÈLE": [
-            "en stèle",
-            "en glyphes"
-          ],
-          "SPC": [
-            "en spc",
-            "en dsl"
-          ]
-        },
-        "ratio": {
-          "max": [
-            "au maximum",
-            "le plus court possible",
-            "minimal",
-            "▲"
-          ],
-          "balanced": [
-            "équilibré",
-            "normal"
-          ],
-          "light": [
-            "léger",
-            "peu"
-          ]
-        }
-      }
-    },
-    {
-      "id": "APPLY",
-      "triggers": [
-        "applique",
-        "utilise",
-        "lance",
-        "active",
-        "charge",
-        "use",
-        "emploie",
-        "implement",
-        "apply",
-        "follow",
-        "enforce",
-        "adopt",
-        "employ",
-        "utilize",
-        "leverage",
-        "stick to",
-        "rely on"
-      ],
-      "default": "APPLY[@skill, ◈]",
-      "params": {
-        "skill": {
-          "@stele": [
-            "stèle",
-            "stele",
-            "l'alphabet"
-          ],
-          "@fractales": [
-            "fractales",
-            "oracle",
-            "tirage"
-          ],
-          "@metalangage": [
-            "métalangage",
-            "metalangage",
-            "résonances"
-          ],
-          "@ler": [
-            "ler",
-            "écriture-réalité"
-          ]
-        }
-      }
-    },
-    {
-      "id": "EXPAND",
-      "triggers": [
-        "déploie",
-        "développe",
-        "étends",
-        "explicite",
-        "détaille depuis",
-        "documente",
-        "commente",
-        "détaille",
-        "document",
-        "explain",
-        "provide",
-        "describe",
-        "add comments",
-        "include",
-        "expand",
-        "detail",
-        "generate docs",
-        "elaborate",
-        "comment",
-        "annotate"
-      ],
-      "default": "EXPAND[seed=◈]",
-      "params": {}
-    },
-    {
-      "id": "FILTER",
-      "triggers": [
-        "filtre",
-        "garde seulement",
-        "ne garde que",
-        "supprime",
-        "enlève",
-        "exclut",
-        "évite",
-        "avoid",
-        "never",
-        "exclude",
-        "remove",
-        "filter",
-        "strip",
-        "ignore",
-        "omit",
-        "don't use",
-        "discard",
-        "skip",
-        "reject",
-        "prevent",
-        "forbid",
-        "block",
-        "dont use",
-        "do not use"
-      ],
-      "default": "FILTER[◈]",
-      "params": {}
-    },
-    {
-      "id": "ITERATE",
-      "triggers": [
-        "répète",
-        "refais",
-        "itère",
-        "pour chaque",
-        "sur tous",
-        "one by one",
-        "for each",
-        "iterate",
-        "loop",
-        "for all",
-        "step by step",
-        "repeat",
-        "go through",
-        "process each",
-        "test all"
-      ],
-      "default": "ITERATE[op=ANALYZE, n=3]",
-      "params": {}
-    },
-    {
-      "id": "CLONE",
-      "triggers": [
-        "copie",
-        "colle",
-        "copier-coller",
-        "copier",
-        "dupliquer",
-        "répliquer",
-        "reproduire",
-        "clone",
-        "copy",
-        "paste",
-        "duplicate",
-        "replicate",
-        "mirror",
-        "scaffold from",
-        "base on",
-        "modeled on",
-        "same as",
-        "like this but",
-        "similar to",
-        "inspired from",
-        "scaffold",
-        "model on"
-      ],
-      "default": "CLONE[source=◈, target=§1]",
-      "params": {
-        "adapt": {
-          "oui": [
-            "adapte",
-            "modifie",
-            "en adaptant",
-            "with changes",
-            "adjusted",
-            "modified",
-            "but with"
-          ],
-          "non": [
-            "identique",
-            "exact",
-            "verbatim",
-            "sans changement",
-            "as is",
-            "exact copy"
-          ]
-        },
-        "scope": {
-          "composant": [
-            "composant",
-            "component",
-            "widget",
-            "module"
-          ],
-          "fonction": [
-            "fonction",
-            "function",
-            "method",
-            "méthode"
-          ],
-          "structure": [
-            "structure",
-            "pattern",
-            "template",
-            "architecture",
-            "scaffold"
-          ]
-        }
-      }
-    },
-    {
-      "id": "VALIDATE",
-      "triggers": [
-        "validate",
-        "verify",
-        "ensure",
-        "check that",
-        "confirm",
-        "assert",
-        "test",
-        "make sure",
-        "valide",
-        "vérifie",
-        "assure-toi",
-        "confirme",
-        "teste",
-        "assure"
-      ],
-      "default": "VALIDATE[◈]",
-      "params": {
-        "scope": {
-          "types": [
-            "type",
-            "typescript",
-            "typing",
-            "types",
-            "typed"
-          ],
-          "tests": [
-            "test",
-            "tests",
-            "unit",
-            "integration",
-            "coverage",
-            "spec"
-          ],
-          "security": [
-            "security",
-            "auth",
-            "permission",
-            "access",
-            "role",
-            "token"
-          ],
-          "schema": [
-            "schema",
-            "format",
-            "structure",
-            "shape",
-            "contract"
-          ]
-        }
-      }
-    },
-    {
-      "id": "DEPLOY",
-      "triggers": [
-        "deploy",
-        "build",
-        "ship",
-        "release",
-        "publish",
-        "push",
-        "bundle",
-        "compile",
-        "déploie",
-        "publie",
-        "compile",
-        "lance",
-        "ship"
-      ],
-      "default": "DEPLOY[◈]",
-      "params": {
-        "env": {
-          "prod": [
-            "production",
-            "prod",
-            "live"
-          ],
-          "staging": [
-            "staging",
-            "preprod",
-            "test env"
-          ],
-          "dev": [
-            "dev",
-            "local",
-            "development"
-          ]
-        }
-      }
-    },
-    {
-      "id": "DEBUG",
-      "triggers": [
-        "debug",
-        "fix",
-        "resolve",
-        "troubleshoot",
-        "investigate error",
-        "trace",
-        "diagnose",
-        "répare",
-        "corrige",
-        "résous",
-        "débogue",
-        "investigate"
-      ],
-      "default": "DEBUG[◈]",
-      "params": {
-        "focus": {
-          "error": [
-            "error",
-            "exception",
-            "crash",
-            "bug",
-            "issue",
-            "problem"
-          ],
-          "performance": [
-            "slow",
-            "performance",
-            "latency",
-            "timeout",
-            "memory"
-          ],
-          "logic": [
-            "logic",
-            "wrong output",
-            "incorrect",
-            "unexpected"
-          ]
-        }
-      }
-    },
-    {
-      "id": "CREATE",
-      "triggers": [
-        "create",
-        "generate",
-        "scaffold",
-        "build",
-        "make",
-        "new",
-        "init",
-        "bootstrap",
-        "setup",
-        "create a",
-        "generate a",
-        "build a",
-        "make a",
-        "new component",
-        "new file",
-        "new module",
-        "from scratch",
-        "boilerplate",
-        "starter",
-        "template for",
-        "set up"
-      ],
-      "default": "CREATE[◈]",
-      "params": {
-        "type": {
-          "component": [
-            "component",
-            "widget",
-            "element",
-            "ui",
-            "button",
-            "form",
-            "modal",
-            "page"
-          ],
-          "function": [
-            "function",
-            "method",
-            "helper",
-            "util",
-            "hook",
-            "handler",
-            "callback"
-          ],
-          "api": [
-            "api",
-            "endpoint",
-            "route",
-            "controller",
-            "service",
-            "rest",
-            "graphql"
-          ],
-          "schema": [
-            "schema",
-            "model",
-            "type",
-            "interface",
-            "struct",
-            "entity",
-            "dto"
-          ],
-          "test": [
-            "test file",
-            "spec",
-            "test suite",
-            "mock",
-            "fixture"
-          ],
-          "config": [
-            "config",
-            "configuration",
-            "settings",
-            "env",
-            "dotenv",
-            "setup file"
-          ]
-        },
-        "from": {
-          "scratch": [
-            "from scratch",
-            "from zero",
-            "brand new",
-            "empty",
-            "blank",
-            "new"
-          ],
-          "template": [
-            "template",
-            "boilerplate",
-            "starter",
-            "pattern",
-            "convention"
-          ]
-        }
-      }
-    },
-    {
-      "id": "ADD",
-      "triggers": [
-        "add",
-        "inject",
-        "insert",
-        "include",
-        "append",
-        "extend",
-        "augment",
-        "plug in",
-        "attach",
-        "add to",
-        "add a",
-        "add the",
-        "insert into",
-        "include in",
-        "extend with",
-        "introduce",
-        "wire up",
-        "hook up",
-        "connect",
-        "integrate"
-      ],
-      "default": "ADD[target=◈]",
-      "params": {
-        "what": {
-          "feature": [
-            "feature",
-            "functionality",
-            "capability",
-            "behavior",
-            "support for"
-          ],
-          "error-handling": [
-            "error handling",
-            "try catch",
-            "exception",
-            "fallback",
-            "guard"
-          ],
-          "logging": [
-            "logging",
-            "log",
-            "console",
-            "trace",
-            "monitoring"
-          ],
-          "validation": [
-            "validation",
-            "validator",
-            "check",
-            "guard",
-            "sanitize"
-          ],
-          "pagination": [
-            "pagination",
-            "paging",
-            "infinite scroll",
-            "load more"
-          ],
-          "auth": [
-            "auth",
-            "authentication",
-            "authorization",
-            "jwt",
-            "session",
-            "middleware"
-          ],
-          "field": [
-            "field",
-            "property",
-            "attribute",
-            "column",
-            "key",
-            "param"
-          ]
-        },
-        "scope": {
-          "*": [
-            "all",
-            "every",
-            "each",
-            "across",
-            "throughout",
-            "globally"
-          ],
-          "◈": [
-            "this",
-            "here",
-            "current",
-            "this one"
-          ]
-        }
-      }
-    },
-    {
       "id": "FIND",
+      "tier": "cognitif",
+      "priority": 90,
+      "signature": [
+        "input",
+        "pattern",
+        "scope",
+        "type"
+      ],
+      "summary": "Recherche dans la base de code.",
       "triggers": [
         "find",
         "search",
@@ -903,18 +253,22 @@
         "where is",
         "where are",
         "grep",
-        "trace",
         "search for",
         "find all",
         "find where",
-        "look for",
         "scan for",
         "detect all",
         "usages of",
         "references to",
         "calls to",
         "instances of",
-        "occurrences of"
+        "occurrences of",
+        "trouve",
+        "cherche",
+        "recherche",
+        "localise",
+        "où est",
+        "où sont"
       ],
       "default": "FIND[input=*, pattern=◈]",
       "params": {
@@ -969,6 +323,1018 @@
           ]
         }
       }
+    },
+    {
+      "id": "RESONE",
+      "tier": "transformatif",
+      "priority": 35,
+      "signature": [
+        "target",
+        "layers"
+      ],
+      "summary": "Active les couches résonantes. Hérité du Métalangage des Résonances.",
+      "triggers": [
+        "résonance",
+        "résonne",
+        "couches",
+        "symbolique",
+        "sens",
+        "résonner",
+        "résoner"
+      ],
+      "default": "RESONE[◈]",
+      "params": {
+        "layers": {
+          "sémantique": [
+            "sémantique",
+            "signification",
+            "sens littéral"
+          ],
+          "émotionnel": [
+            "émotionnel",
+            "ressenti",
+            "émotion",
+            "feeling"
+          ],
+          "symbolique": [
+            "symbolique",
+            "archétype",
+            "symbole"
+          ],
+          "narratif": [
+            "narratif",
+            "récit"
+          ],
+          "all": [
+            "toutes les couches",
+            "tout",
+            "complet",
+            "entier",
+            "all"
+          ]
+        }
+      }
+    },
+    {
+      "id": "TRANSDUIT",
+      "tier": "transformatif",
+      "priority": 40,
+      "signature": [
+        "input",
+        "from",
+        "to"
+      ],
+      "summary": "Change de registre ou de format.",
+      "notes": [
+        "`current` / `new` : valeurs génériques (état actuel / nouvel état), sans déclencheur"
+      ],
+      "triggers": [
+        "transforme",
+        "convertis",
+        "traduis",
+        "change de registre",
+        "passe en",
+        "transpose",
+        "refactore",
+        "refactor",
+        "convert",
+        "transform",
+        "migrate",
+        "translate",
+        "rewrite",
+        "adapt",
+        "port",
+        "restructure",
+        "reorganize",
+        "modernize",
+        "update to"
+      ],
+      "default": "TRANSDUIT[◈]",
+      "params": {
+        "from": {
+          "technique": [
+            "depuis technique",
+            "depuis le code"
+          ],
+          "symbolique": [
+            "depuis symbolique"
+          ],
+          "prose": [
+            "depuis prose",
+            "depuis le texte"
+          ],
+          "rationnel": [
+            "depuis rationnel"
+          ],
+          "narratif": [
+            "depuis narratif"
+          ],
+          "current": [],
+          "verbose": [
+            "verbose",
+            "verbeux"
+          ],
+          "generic": [
+            "generic code",
+            "code générique"
+          ],
+          "oop": [
+            "class",
+            "classe",
+            "classes",
+            "oop",
+            "inheritance",
+            "héritage"
+          ],
+          "complex": [
+            "complex",
+            "complexe",
+            "convoluted"
+          ],
+          "inline": [
+            "inline"
+          ],
+          "slow": [
+            "slow",
+            "lent",
+            "lente"
+          ],
+          "monolithic": [
+            "monolith",
+            "monolithic",
+            "monolithe"
+          ]
+        },
+        "to": {
+          "STÈLE": [
+            "en stèle",
+            "en glyphes",
+            "en chaîne stèle"
+          ],
+          "symbolique": [
+            "en symbolique",
+            "vers symbolique"
+          ],
+          "prose": [
+            "en prose",
+            "en texte",
+            "en français"
+          ],
+          "SPC": [
+            "en spc",
+            "en dsl",
+            "en compact"
+          ],
+          "narratif": [
+            "en narratif",
+            "vers narratif"
+          ],
+          "clean": [
+            "clean",
+            "propre"
+          ],
+          "minimal": [
+            "smaller functions",
+            "fonctions plus petites"
+          ],
+          "idiomatic": [
+            "idiomatic",
+            "idiomatique"
+          ],
+          "functional": [
+            "functional",
+            "fonctionnel"
+          ],
+          "readable": [
+            "readable",
+            "lisible"
+          ],
+          "module": [
+            "separate file",
+            "fichier séparé"
+          ],
+          "modular": [
+            "modular",
+            "modulaire"
+          ],
+          "optimized": [
+            "optimized",
+            "optimisé",
+            "faster"
+          ],
+          "new": []
+        }
+      }
+    },
+    {
+      "id": "COMPRESS",
+      "tier": "transformatif",
+      "priority": 45,
+      "signature": [
+        "input",
+        "format",
+        "ratio"
+      ],
+      "summary": "Réduit à signature minimale.",
+      "triggers": [
+        "compresse",
+        "résume",
+        "réduis",
+        "archive",
+        "synthétise",
+        "condense",
+        "minimise",
+        "garde minimal",
+        "keep minimal",
+        "minimize",
+        "keep small",
+        "reduce",
+        "compress",
+        "simplify",
+        "make minimal",
+        "keep diff small",
+        "trim",
+        "shorten",
+        "abbreviate",
+        "summarize",
+        "summarise",
+        "sum up",
+        "récapitule"
+      ],
+      "default": "COMPRESS[◈]",
+      "params": {
+        "format": {
+          "STÈLE": [
+            "en stèle",
+            "en glyphes"
+          ],
+          "SPC": [
+            "en spc",
+            "en dsl"
+          ]
+        },
+        "ratio": {
+          "max": [
+            "au maximum",
+            "le plus court possible",
+            "minimal",
+            "▲"
+          ],
+          "balanced": [
+            "équilibré",
+            "normal"
+          ],
+          "light": [
+            "léger",
+            "peu"
+          ]
+        }
+      }
+    },
+    {
+      "id": "CREATE",
+      "tier": "création",
+      "priority": 70,
+      "signature": [
+        "target",
+        "type",
+        "from"
+      ],
+      "summary": "Génère depuis zéro.",
+      "triggers": [
+        "create",
+        "generate",
+        "scaffold",
+        "make",
+        "init",
+        "bootstrap",
+        "setup",
+        "create a",
+        "generate a",
+        "build a",
+        "make a",
+        "new component",
+        "new file",
+        "new module",
+        "from scratch",
+        "boilerplate",
+        "starter",
+        "template for",
+        "set up",
+        "crée",
+        "créer",
+        "génère",
+        "générer",
+        "initialise",
+        "rédige",
+        "rédiger",
+        "écris",
+        "écrire"
+      ],
+      "default": "CREATE[◈]",
+      "params": {
+        "type": {
+          "component": [
+            "component",
+            "widget",
+            "element",
+            "ui",
+            "button",
+            "form",
+            "modal",
+            "page",
+            "composant",
+            "formulaire"
+          ],
+          "function": [
+            "function",
+            "method",
+            "helper",
+            "util",
+            "hook",
+            "handler",
+            "callback",
+            "fonction"
+          ],
+          "api": [
+            "api",
+            "endpoint",
+            "route",
+            "controller",
+            "service",
+            "rest",
+            "graphql"
+          ],
+          "schema": [
+            "schema",
+            "model",
+            "type",
+            "interface",
+            "struct",
+            "entity",
+            "dto"
+          ],
+          "test": [
+            "test file",
+            "spec",
+            "test suite",
+            "mock",
+            "fixture",
+            "fichier de test"
+          ],
+          "config": [
+            "config",
+            "configuration",
+            "settings",
+            "env",
+            "dotenv",
+            "setup file"
+          ]
+        },
+        "from": {
+          "scratch": [
+            "from scratch",
+            "from zero",
+            "brand new",
+            "empty",
+            "blank",
+            "new",
+            "de zéro",
+            "nouveau",
+            "nouvelle"
+          ],
+          "template": [
+            "template",
+            "boilerplate",
+            "starter",
+            "pattern",
+            "convention"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ADD",
+      "tier": "création",
+      "priority": 70,
+      "signature": [
+        "target",
+        "what",
+        "scope"
+      ],
+      "summary": "Injecte dans de l'existant.",
+      "notes": [
+        "La Pierre de Rosette émet `scope` dans `target` (`target=*` ou `target=◈`)"
+      ],
+      "triggers": [
+        "add",
+        "inject",
+        "insert",
+        "include",
+        "append",
+        "extend",
+        "augment",
+        "plug in",
+        "attach",
+        "add to",
+        "add a",
+        "add the",
+        "insert into",
+        "include in",
+        "extend with",
+        "introduce",
+        "wire up",
+        "hook up",
+        "connect",
+        "integrate",
+        "ajoute",
+        "ajouter",
+        "injecte",
+        "insère",
+        "intègre",
+        "branche"
+      ],
+      "default": "ADD[target=◈]",
+      "bind": {
+        "scope": "target"
+      },
+      "params": {
+        "what": {
+          "feature": [
+            "feature",
+            "functionality",
+            "capability",
+            "behavior",
+            "support for"
+          ],
+          "error-handling": [
+            "error handling",
+            "try catch",
+            "exception",
+            "fallback",
+            "guard"
+          ],
+          "logging": [
+            "logging",
+            "log",
+            "console",
+            "trace",
+            "monitoring",
+            "journalisation",
+            "journaux",
+            "logs"
+          ],
+          "validation": [
+            "validation",
+            "validator",
+            "check",
+            "guard",
+            "sanitize"
+          ],
+          "pagination": [
+            "pagination",
+            "paging",
+            "infinite scroll",
+            "load more"
+          ],
+          "auth": [
+            "auth",
+            "authentication",
+            "authorization",
+            "jwt",
+            "session",
+            "middleware"
+          ],
+          "field": [
+            "field",
+            "property",
+            "attribute",
+            "column",
+            "key",
+            "param"
+          ],
+          "tests": [
+            "test",
+            "tests",
+            "unit tests",
+            "tests unitaires",
+            "integration tests",
+            "tests d'intégration"
+          ]
+        },
+        "scope": {
+          "*": [
+            "all",
+            "every",
+            "each",
+            "across",
+            "throughout",
+            "globally"
+          ],
+          "◈": [
+            "this",
+            "here",
+            "current",
+            "this one"
+          ]
+        }
+      }
+    },
+    {
+      "id": "CLONE",
+      "tier": "création",
+      "priority": 65,
+      "signature": [
+        "source",
+        "target",
+        "adapt",
+        "scope"
+      ],
+      "summary": "Copie et adapte un pattern existant.",
+      "triggers": [
+        "copie",
+        "colle",
+        "copier-coller",
+        "copier",
+        "dupliquer",
+        "répliquer",
+        "reproduire",
+        "clone",
+        "copy",
+        "paste",
+        "duplicate",
+        "replicate",
+        "mirror",
+        "scaffold from",
+        "base on",
+        "modeled on",
+        "same as",
+        "like this but",
+        "similar to",
+        "inspired from",
+        "model on"
+      ],
+      "default": "CLONE[source=◈]",
+      "params": {
+        "adapt": {
+          "oui": [
+            "adapte",
+            "modifie",
+            "en adaptant",
+            "with changes",
+            "adjusted",
+            "modified",
+            "but with"
+          ],
+          "non": [
+            "identique",
+            "exact",
+            "verbatim",
+            "sans changement",
+            "as is",
+            "exact copy"
+          ]
+        },
+        "scope": {
+          "composant": [
+            "composant",
+            "component",
+            "widget",
+            "module"
+          ],
+          "fonction": [
+            "fonction",
+            "function",
+            "method",
+            "méthode"
+          ],
+          "structure": [
+            "structure",
+            "pattern",
+            "template",
+            "architecture",
+            "scaffold"
+          ]
+        }
+      }
+    },
+    {
+      "id": "APPLY",
+      "tier": "flux",
+      "priority": 20,
+      "signature": [
+        "skill",
+        "input",
+        "mode"
+      ],
+      "summary": "Invoque un skill ou une convention par pointeur.",
+      "notes": [
+        "`skill` : `@nom` ou `@nom::sous-module` (ex. `@convention::clean-code`) ; suffixe `⌒` = lazy load"
+      ],
+      "triggers": [
+        "applique",
+        "utilise",
+        "lance",
+        "active",
+        "charge",
+        "use",
+        "emploie",
+        "implement",
+        "apply",
+        "follow",
+        "enforce",
+        "adopt",
+        "employ",
+        "utilize",
+        "leverage",
+        "stick to",
+        "rely on"
+      ],
+      "default": "APPLY[@skill, ◈]",
+      "params": {
+        "skill": {
+          "@stele": [
+            "stèle",
+            "stele",
+            "l'alphabet"
+          ],
+          "@fractales": [
+            "fractales",
+            "oracle",
+            "tirage"
+          ],
+          "@metalangage": [
+            "métalangage",
+            "metalangage",
+            "résonances"
+          ],
+          "@ler": [
+            "ler",
+            "écriture-réalité"
+          ],
+          "@convention": [
+            "convention",
+            "conventions",
+            "best practices",
+            "bonnes pratiques"
+          ]
+        }
+      }
+    },
+    {
+      "id": "EXPAND",
+      "tier": "flux",
+      "priority": 25,
+      "signature": [
+        "seed",
+        "ctx",
+        "depth"
+      ],
+      "summary": "Déploie une graine compressée vers un output étendu.",
+      "notes": [
+        "`seed` : chaîne STÈLE · référence `§N` · `◈`"
+      ],
+      "triggers": [
+        "développe",
+        "étends",
+        "explicite",
+        "détaille depuis",
+        "documente",
+        "commente",
+        "détaille",
+        "document",
+        "explain",
+        "provide",
+        "describe",
+        "add comments",
+        "expand",
+        "detail",
+        "generate docs",
+        "elaborate",
+        "comment",
+        "annotate"
+      ],
+      "default": "EXPAND[seed=◈]",
+      "params": {
+        "ctx": {
+          "docs": [
+            "documentation",
+            "docs",
+            "readme"
+          ],
+          "jsdoc": [
+            "jsdoc",
+            "docstring",
+            "docstrings"
+          ],
+          "git": [
+            "git",
+            "commit message",
+            "message de commit"
+          ],
+          "changelog": [
+            "changelog",
+            "release notes",
+            "notes de version"
+          ],
+          "structure": [
+            "project structure",
+            "arborescence",
+            "structure du projet"
+          ],
+          "explicit": [
+            "explicit over implicit"
+          ]
+        }
+      }
+    },
+    {
+      "id": "FILTER",
+      "tier": "flux",
+      "priority": 50,
+      "signature": [
+        "input",
+        "keep",
+        "drop",
+        "mode"
+      ],
+      "summary": "Sélectionne ou exclut selon des critères.",
+      "notes": [
+        "`⊘x` en position libre équivaut à `drop=[x]` (ex. `FILTER[◈, ⊘deprecated]`)",
+        "`mode=delete` : suppression effective (fichiers, données, historique), par opposition à une simple exclusion"
+      ],
+      "triggers": [
+        "filtre",
+        "garde seulement",
+        "ne garde que",
+        "supprime",
+        "enlève",
+        "exclut",
+        "évite",
+        "avoid",
+        "never",
+        "exclude",
+        "remove",
+        "filter",
+        "strip",
+        "ignore",
+        "omit",
+        "don't use",
+        "discard",
+        "skip",
+        "reject",
+        "prevent",
+        "forbid",
+        "block",
+        "dont use",
+        "do not use",
+        "efface",
+        "effacer",
+        "delete",
+        "erase",
+        "purge",
+        "wipe",
+        "détruis",
+        "drop"
+      ],
+      "default": "FILTER[◈]",
+      "params": {
+        "mode": {
+          "delete": [
+            "supprime",
+            "supprimer",
+            "efface",
+            "effacer",
+            "delete",
+            "remove",
+            "erase",
+            "purge",
+            "wipe",
+            "détruis",
+            "drop",
+            "rm"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ITERATE",
+      "tier": "flux",
+      "priority": 55,
+      "signature": [
+        "op",
+        "n",
+        "var"
+      ],
+      "summary": "Exécute un opérateur N fois avec variation d'un paramètre.",
+      "notes": [
+        "Sortie : stack ordonné des résultats",
+        "`op` et `n` ne sont émis que s'ils sont exprimés : `op` absent → l'opérateur précédent du pipe, sinon demander ; `n` absent → une passe par élément de `◈`",
+        "Forme courte `OP[◈]↻N` acceptée par l'interpréteur ; la Pierre de Rosette émet toujours la forme longue"
+      ],
+      "triggers": [
+        "répète",
+        "refais",
+        "itère",
+        "pour chaque",
+        "sur tous",
+        "one by one",
+        "for each",
+        "iterate",
+        "loop",
+        "for all",
+        "step by step",
+        "repeat",
+        "go through",
+        "process each",
+        "test all"
+      ],
+      "default": "ITERATE[◈]",
+      "params": {}
+    },
+    {
+      "id": "VALIDATE",
+      "tier": "validation",
+      "priority": 85,
+      "signature": [
+        "input",
+        "scope"
+      ],
+      "summary": "Vérifie la conformité.",
+      "triggers": [
+        "validate",
+        "verify",
+        "ensure",
+        "check that",
+        "confirm",
+        "assert",
+        "test",
+        "make sure",
+        "valide",
+        "vérifie",
+        "assure-toi",
+        "confirme",
+        "teste",
+        "assure"
+      ],
+      "default": "VALIDATE[◈]",
+      "params": {
+        "scope": {
+          "types": [
+            "type",
+            "typescript",
+            "typing",
+            "types",
+            "typed"
+          ],
+          "tests": [
+            "test",
+            "tests",
+            "unit",
+            "integration",
+            "coverage",
+            "spec"
+          ],
+          "security": [
+            "security",
+            "auth",
+            "permission",
+            "access",
+            "role",
+            "token"
+          ],
+          "schema": [
+            "schema",
+            "format",
+            "structure",
+            "shape",
+            "contract"
+          ],
+          "error": [
+            "error",
+            "errors",
+            "erreur",
+            "erreurs",
+            "exception",
+            "exceptions"
+          ]
+        }
+      }
+    },
+    {
+      "id": "DEBUG",
+      "tier": "validation",
+      "priority": 80,
+      "signature": [
+        "input",
+        "focus"
+      ],
+      "summary": "Diagnostique et corrige.",
+      "triggers": [
+        "debug",
+        "fix",
+        "resolve",
+        "troubleshoot",
+        "investigate error",
+        "trace",
+        "diagnose",
+        "répare",
+        "corrige",
+        "résous",
+        "débogue",
+        "broken",
+        "cassé",
+        "plante",
+        "fails",
+        "failing",
+        "not working",
+        "ne marche pas",
+        "ne fonctionne pas",
+        "échoue"
+      ],
+      "default": "DEBUG[◈]",
+      "params": {
+        "focus": {
+          "error": [
+            "error",
+            "exception",
+            "crash",
+            "bug",
+            "issue",
+            "problem",
+            "erreur",
+            "bogue",
+            "plantage"
+          ],
+          "performance": [
+            "slow",
+            "performance",
+            "latency",
+            "timeout",
+            "memory"
+          ],
+          "logic": [
+            "logic",
+            "wrong output",
+            "incorrect",
+            "unexpected"
+          ]
+        }
+      }
+    },
+    {
+      "id": "DEPLOY",
+      "tier": "validation",
+      "priority": 75,
+      "signature": [
+        "input",
+        "env"
+      ],
+      "summary": "Build et déploie.",
+      "triggers": [
+        "deploy",
+        "build",
+        "ship",
+        "release",
+        "publish",
+        "push",
+        "bundle",
+        "compile",
+        "déploie",
+        "publie",
+        "mets en prod",
+        "mise en production",
+        "mise en prod",
+        "pousse en prod",
+        "livre",
+        "livraison",
+        "go live",
+        "roll out",
+        "rollout"
+      ],
+      "default": "DEPLOY[◈]",
+      "params": {
+        "env": {
+          "prod": [
+            "production",
+            "prod",
+            "live",
+            "en prod",
+            "mise en production",
+            "go live"
+          ],
+          "staging": [
+            "staging",
+            "preprod",
+            "test env"
+          ],
+          "dev": [
+            "dev",
+            "local",
+            "development"
+          ]
+        }
+      }
     }
   ],
   "modifiers": {
@@ -983,12 +1349,12 @@
       "comprehensive",
       "in-depth",
       "at all times",
-      "fully"
+      "fully",
+      "in depth"
     ],
     "pipe": [
       "puis",
       "ensuite",
-      "après",
       "et puis",
       "suivi de",
       "⟶",
@@ -996,7 +1362,11 @@
       "after that",
       "followed by",
       "once done",
-      "next"
+      "après ça",
+      "après cela",
+      "après quoi",
+      "next step",
+      "as a next step"
     ],
     "conditional": [
       "si",
@@ -1014,7 +1384,10 @@
     "else": [
       "sinon",
       "autrement",
-      "dans le cas contraire"
+      "dans le cas contraire",
+      "else",
+      "otherwise",
+      "or else"
     ],
     "store": [
       "stocke",
@@ -1026,8 +1399,7 @@
       "remember",
       "store",
       "keep track",
-      "maintain state",
-      "log"
+      "maintain state"
     ],
     "session_close": [
       "archive la session",
@@ -1037,11 +1409,7 @@
       "scelle",
       "finalize",
       "wrap up",
-      "commit",
-      "done",
-      "finished",
-      "terminé",
-      "fini"
+      "commit"
     ],
     "lazy_load": [
       "en attente",
@@ -1049,6 +1417,15 @@
       "à la demande",
       "⌒"
     ]
+  },
+  "modifier_effects": {
+    "▲_max": "→ ajoute ▲ (profondeur max)",
+    "pipe": "→ enchaîne avec ⟶",
+    "conditional": "→ structure A ? B : C",
+    "else": "→ branche : C du conditionnel",
+    "store": "→ ajoute → §N (ancre)",
+    "session_close": "→ termine par ⊜",
+    "lazy_load": "→ ajoute ⌒ au pointeur de skill"
   },
   "output_types": {
     "prose": [
@@ -1062,7 +1439,6 @@
       "as text"
     ],
     "outline": [
-      "liste",
       "en liste",
       "résumé structuré",
       "outline",
@@ -1078,9 +1454,7 @@
       "chaîne stèle"
     ],
     "table": [
-      "tableau",
       "en tableau",
-      "table",
       "as table",
       "comparison",
       "versus",
@@ -1088,15 +1462,13 @@
     ],
     "signature": [
       "signature",
-      "court",
       "court résumé"
     ],
     "code": [
       "as code",
       "generate code",
       "implement",
-      "en code",
-      "code"
+      "en code"
     ]
   },
   "shortcuts": {
@@ -1138,11 +1510,11 @@
     "always follow naming conventions": "APPLY[@convention::naming, ◈]",
     "never use any type": "FILTER[◈, ⊘any]",
     "never commit secrets": "FILTER[◈, ⊘secrets]",
-    "never ignore errors": "VALIDATE[◈, scope=error] ? null : DEBUG[◈, focus=error]",
+    "never ignore errors": "VALIDATE[◈, scope=error] ? ∅ : DEBUG[◈, focus=error]",
     "prefer functional components": "APPLY[@convention::functional, ◈]",
     "prefer composition over inheritance": "TRANSDUIT[◈, from=oop, to=functional]",
     "prefer explicit over implicit": "EXPAND[seed=◈, ctx=explicit]",
-    "optimize for performance": "ANALYZE[ctx=technique, focus=performance, ▲]",
+    "optimize for performance": "ANALYZE[◈, ctx=technique, ▲] ⟶ DEBUG[◈, focus=performance]",
     "optimize bundle size": "COMPRESS[◈, ratio=max]",
     "keep code simple": "COMPRESS[◈, ratio=balanced]",
     "keep it minimal": "COMPRESS[◈, ratio=max]",
